@@ -1,0 +1,2063 @@
+[
+  {
+    "governorate": "Cairo",
+    "city": "Cairo",
+    "areas": [
+      {
+        "name": "Maadi",
+        "meeting_points": [
+          "Grand Mall Maadi",
+          "Freedom Square",
+          "Maadi Club",
+          "Maadi Metro Station"
+        ]
+      },
+      {
+        "name": "New Cairo / Fifth Settlement",
+        "meeting_points": [
+          "Cairo Festival City Mall",
+          "Downtown Mall New Cairo",
+          "AUC New Cairo Gate",
+          "90th Street Square"
+        ]
+      },
+      {
+        "name": "Heliopolis",
+        "meeting_points": [
+          "Baron Palace",
+          "Heliopolis Club",
+          "Roxy Square",
+          "Korba Square"
+        ]
+      },
+      {
+        "name": "Nasr City",
+        "meeting_points": [
+          "Citystars Mall",
+          "Genena Mall",
+          "Al Ahly Club Nasr City",
+          "Makram Ebeid Street"
+        ]
+      },
+      {
+        "name": "Zamalek",
+        "meeting_points": [
+          "Gezira Club",
+          "El Sawy Culturewheel",
+          "26th of July Street",
+          "Cairo Opera House"
+        ]
+      },
+      {
+        "name": "Downtown Cairo",
+        "meeting_points": [
+          "Tahrir Square",
+          "Sadat Metro Station",
+          "Talaat Harb Square",
+          "Abdel Moneim Riad Square"
+        ]
+      },
+      {
+        "name": "Shubra",
+        "meeting_points": [
+          "Shubra Street",
+          "Rod El Farag Square",
+          "St. Teresa Metro Station",
+          "Khalafawy Metro Station"
+        ]
+      },
+      {
+        "name": "Mokattam",
+        "meeting_points": [
+          "Nafoura Square",
+          "Street 9 Mokattam",
+          "Mokattam Club",
+          "Carrefour Mokattam"
+        ]
+      },
+      {
+        "name": "Helwan",
+        "meeting_points": [
+          "Helwan Metro Station",
+          "Helwan University",
+          "Japanese Garden",
+          "Helwan Station Square"
+        ]
+      },
+      {
+        "name": "Madinaty",
+        "meeting_points": [
+          "Madinaty Gate 1",
+          "Arabesque Mall",
+          "South Park",
+          "Madinaty Central Park"
+        ]
+      },
+      {
+        "name": "Al Rehab",
+        "meeting_points": [
+          "Al Rehab Gate 6",
+          "Eastern Market",
+          "Al Rehab Mall 1",
+          "Al Rehab Club"
+        ]
+      },
+      {
+        "name": "El Shorouk",
+        "meeting_points": [
+          "El Shorouk City Gate",
+          "Panorama Mall El Shorouk",
+          "El Shorouk Club",
+          "British University in Egypt BUE"
+        ]
+      },
+      {
+        "name": "Abbassia",
+        "meeting_points": [
+          "Abbassia Square",
+          "Ain Shams University",
+          "Abbassia Metro Station",
+          "St. Mark Cathedral"
+        ]
+      },
+      {
+        "name": "Manial",
+        "meeting_points": [
+          "Manial Palace",
+          "Qasr El Aini Hospital",
+          "Manial Corniche",
+          "Cairo University Bridge"
+        ]
+      },
+      {
+        "name": "Garden City",
+        "meeting_points": [
+          "Four Seasons Nile Plaza",
+          "British Embassy Area",
+          "Garden City Corniche",
+          "Qasr El Aini Street"
+        ]
+      },
+      {
+        "name": "Sayeda Zeinab",
+        "meeting_points": [
+          "Sayeda Zeinab Mosque",
+          "Sayeda Zeinab Metro Station",
+          "Port Said Street",
+          "Midan El Sayeda"
+        ]
+      },
+      {
+        "name": "Hadayek El Qobba",
+        "meeting_points": [
+          "Hadayek El Qobba Metro Station",
+          "Waili Square",
+          "Saray El Qobba Palace",
+          "Hadayek El Qobba Main Street"
+        ]
+      },
+      {
+        "name": "Ain Shams",
+        "meeting_points": [
+          "Ain Shams Metro Station",
+          "Ain Shams University Area",
+          "Gesr El Suez Street",
+          "Alf Maskan Square"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Giza",
+    "city": "Giza",
+    "areas": [
+      {
+        "name": "Mohandessin",
+        "meeting_points": [
+          "Shooting Club",
+          "Lebanon Square",
+          "Arab League Street",
+          "Mostafa Mahmoud Mosque"
+        ]
+      },
+      {
+        "name": "Dokki",
+        "meeting_points": [
+          "Mesaha Square",
+          "Dokki Metro Station",
+          "State Council",
+          "Vini Square"
+        ]
+      },
+      {
+        "name": "Agouza",
+        "meeting_points": [
+          "Balloon Theater",
+          "Agouza Nile Street",
+          "Sphinx Square",
+          "Agouza Corniche"
+        ]
+      },
+      {
+        "name": "Haram",
+        "meeting_points": [
+          "Remaya Square",
+          "Mashaal Station",
+          "Pyramids Street",
+          "Sphinx Entrance"
+        ]
+      },
+      {
+        "name": "Faisal",
+        "meeting_points": [
+          "Cairo University Metro Station",
+          "Faisal Clock Square",
+          "King Faisal Street",
+          "Talbeya Station"
+        ]
+      },
+      {
+        "name": "6th of October",
+        "meeting_points": [
+          "Mall of Arabia",
+          "Al Hosary Square",
+          "6th of October University",
+          "Dream Park"
+        ]
+      },
+      {
+        "name": "Sheikh Zayed",
+        "meeting_points": [
+          "Hyper One",
+          "Arkan Plaza",
+          "Americana Plaza",
+          "Capital Business Park"
+        ]
+      },
+      {
+        "name": "Hadayek Al Ahram",
+        "meeting_points": [
+          "First Gate",
+          "Second Gate",
+          "Khafre Area",
+          "Khufu Area"
+        ]
+      },
+      {
+        "name": "Imbaba",
+        "meeting_points": [
+          "Kit Kat Square",
+          "El Wehda Street",
+          "Imbaba Station",
+          "Old Imbaba Airport Area"
+        ]
+      },
+      {
+        "name": "Boulaq El Dakrour",
+        "meeting_points": [
+          "Nahia Crossing",
+          "Teraa El Zomor Street",
+          "Boulaq El Dakrour Station",
+          "Boulaq El Dakrour Metro Station"
+        ]
+      },
+      {
+        "name": "Giza Square",
+        "meeting_points": [
+          "Giza Square",
+          "Giza Railway Station",
+          "Giza Metro Station",
+          "Giza Zoo Gate"
+        ]
+      },
+      {
+        "name": "Al Wahat Road",
+        "meeting_points": [
+          "Mall of Egypt",
+          "Smart Village Gate",
+          "Media Production City Gate",
+          "October Gardens Entrance"
+        ]
+      },
+      {
+        "name": "Oseem",
+        "meeting_points": [
+          "Oseem Main Square",
+          "Oseem Bus Stop",
+          "City Council Area",
+          "Oseem Main Street"
+        ]
+      },
+      {
+        "name": "Kerdasa",
+        "meeting_points": [
+          "Kerdasa Main Square",
+          "Kerdasa Market",
+          "City Council Area",
+          "Kerdasa Main Road"
+        ]
+      },
+      {
+        "name": "Badrshein",
+        "meeting_points": [
+          "Badrshein Railway Station",
+          "Badrshein Bus Stop",
+          "City Council Area",
+          "Saqqara Road"
+        ]
+      },
+      {
+        "name": "Atfih",
+        "meeting_points": [
+          "Atfih Bus Stop",
+          "Atfih City Council",
+          "Atfih Main Square",
+          "Nile Corniche Area"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Alexandria",
+    "city": "Alexandria",
+    "areas": [
+      {
+        "name": "Smouha",
+        "meeting_points": [
+          "Smouha Club",
+          "Green Plaza",
+          "Victor Emmanuel Square",
+          "Fathallah Market Smouha"
+        ]
+      },
+      {
+        "name": "Raml Station",
+        "meeting_points": [
+          "Metro Cinema",
+          "Cecil Hotel",
+          "Saad Zaghloul Square",
+          "Raml Tram Station"
+        ]
+      },
+      {
+        "name": "Sidi Gaber",
+        "meeting_points": [
+          "Sidi Gaber Railway Station",
+          "Zahran Mall",
+          "Sidi Gaber Bridge",
+          "Faculty of Engineering"
+        ]
+      },
+      {
+        "name": "Miami",
+        "meeting_points": [
+          "Khaled Ibn El Waleed Street",
+          "Fathallah Miami",
+          "Miami Corniche",
+          "Miami Cinema"
+        ]
+      },
+      {
+        "name": "Agami",
+        "meeting_points": [
+          "Bietash",
+          "Hanoville",
+          "Dekheila",
+          "Bietash Main Street"
+        ]
+      },
+      {
+        "name": "Laurent",
+        "meeting_points": [
+          "Laurent Tram Station",
+          "Fathallah Laurent",
+          "Abu Qir Street",
+          "Laurent Square"
+        ]
+      },
+      {
+        "name": "Stanley",
+        "meeting_points": [
+          "Stanley Bridge",
+          "Stanley Beach",
+          "Syria Street",
+          "Stanley Corniche"
+        ]
+      },
+      {
+        "name": "Asafra",
+        "meeting_points": [
+          "Street 45",
+          "Fathallah Asafra",
+          "Asafra Tram Station",
+          "Asafra Corniche"
+        ]
+      },
+      {
+        "name": "Gleem",
+        "meeting_points": [
+          "Gleem Bay",
+          "Gleem Tram Station",
+          "Gleem Corniche",
+          "San Stefano Area"
+        ]
+      },
+      {
+        "name": "San Stefano",
+        "meeting_points": [
+          "San Stefano Grand Plaza",
+          "San Stefano Tram Station",
+          "Four Seasons Alexandria",
+          "San Stefano Corniche"
+        ]
+      },
+      {
+        "name": "Mandara",
+        "meeting_points": [
+          "Mandara Railway Station",
+          "Montazah Gate",
+          "Mandara Corniche",
+          "Mandara Square"
+        ]
+      },
+      {
+        "name": "Borg El Arab",
+        "meeting_points": [
+          "Borg El Arab City Gate",
+          "Borg El Arab Stadium",
+          "Borg El Arab Airport Road",
+          "City Council Area"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Dakahlia",
+    "city": "Mansoura",
+    "areas": [
+      {
+        "name": "University District",
+        "meeting_points": [
+          "Toshka Gate",
+          "Mansoura University",
+          "University Mall",
+          "Gihan Street"
+        ]
+      },
+      {
+        "name": "El Mashaya",
+        "meeting_points": [
+          "Geziret El Ward Club",
+          "Dakahlia Governorate Building",
+          "Ramada Hotel Mansoura",
+          "Shagaret El Dor Park"
+        ]
+      },
+      {
+        "name": "Toriel",
+        "meeting_points": [
+          "Suez Canal Street",
+          "Toriel Square",
+          "El Hewar Club",
+          "El Teraa Street"
+        ]
+      },
+      {
+        "name": "Talkha",
+        "meeting_points": [
+          "Talkha Railway Station",
+          "Talkha Bus Stop",
+          "Talkha Bridge",
+          "Talkha City Council"
+        ]
+      },
+      {
+        "name": "Mit Ghamr",
+        "meeting_points": [
+          "Mit Ghamr Railway Station",
+          "Mit Ghamr Bus Stop",
+          "Zefta Bridge",
+          "Port Said Street"
+        ]
+      },
+      {
+        "name": "Sinbellawein",
+        "meeting_points": [
+          "Sinbellawein Railway Station",
+          "Sinbellawein Bus Stop",
+          "Station Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Aga",
+        "meeting_points": [
+          "Aga Railway Station",
+          "Aga Bus Stop",
+          "Aga City Council",
+          "Aga Main Square"
+        ]
+      },
+      {
+        "name": "Belqas",
+        "meeting_points": [
+          "Belqas Bus Stop",
+          "Belqas City Council",
+          "Belqas Main Square",
+          "Belqas Main Street"
+        ]
+      },
+      {
+        "name": "Sherbin",
+        "meeting_points": [
+          "Sherbin Bus Stop",
+          "Sherbin City Council",
+          "Sherbin Main Square",
+          "Sherbin Market"
+        ]
+      },
+      {
+        "name": "Dikirnis",
+        "meeting_points": [
+          "Dikirnis Bus Stop",
+          "Dikirnis City Council",
+          "Dikirnis Main Square",
+          "Dikirnis Hospital Area"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Qalyubia",
+    "city": "Banha",
+    "areas": [
+      {
+        "name": "Banha",
+        "meeting_points": [
+          "Banha Railway Station",
+          "Banha University",
+          "Nile Corniche",
+          "Signal Square"
+        ]
+      },
+      {
+        "name": "Shubra El Kheima",
+        "meeting_points": [
+          "Shubra El Kheima Metro Station",
+          "El Moassasa",
+          "Bahtim",
+          "Ahmed Orabi Square"
+        ]
+      },
+      {
+        "name": "Qalyub",
+        "meeting_points": [
+          "Qalyub Railway Station",
+          "Qalyub Bus Stop",
+          "Station Square",
+          "Cairo-Alexandria Agricultural Road"
+        ]
+      },
+      {
+        "name": "Khanka",
+        "meeting_points": [
+          "Khanka Hospital",
+          "Khanka Youth Center",
+          "Khanka Bus Stop",
+          "Khanka Square"
+        ]
+      },
+      {
+        "name": "Tukh",
+        "meeting_points": [
+          "Tukh Railway Station",
+          "Tukh Bus Stop",
+          "Tukh City Council",
+          "Agricultural Road"
+        ]
+      },
+      {
+        "name": "Qaha",
+        "meeting_points": [
+          "Qaha Railway Station",
+          "Qaha Bus Stop",
+          "Qaha Main Square",
+          "Qaha City Council"
+        ]
+      },
+      {
+        "name": "Kafr Shukr",
+        "meeting_points": [
+          "Kafr Shukr Railway Station",
+          "Kafr Shukr Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Sharqia",
+    "city": "Zagazig",
+    "areas": [
+      {
+        "name": "Zagazig",
+        "meeting_points": [
+          "Zagazig University",
+          "Zagazig Railway Station",
+          "El Qawmia Square",
+          "Talba Oweida Street"
+        ]
+      },
+      {
+        "name": "10th of Ramadan",
+        "meeting_points": [
+          "Jordan Area",
+          "Downtown Mall 10th of Ramadan",
+          "10th of Ramadan Main Square",
+          "First District"
+        ]
+      },
+      {
+        "name": "Belbeis",
+        "meeting_points": [
+          "Belbeis Station",
+          "Belbeis Bus Stop",
+          "Port Said Street",
+          "Belbeis City Council"
+        ]
+      },
+      {
+        "name": "Minya El Qamh",
+        "meeting_points": [
+          "Minya El Qamh Railway Station",
+          "Station Square",
+          "Minya El Qamh Bus Stop",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Abu Kebir",
+        "meeting_points": [
+          "Abu Kebir Railway Station",
+          "Abu Kebir Bus Stop",
+          "Abu Kebir Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Faqous",
+        "meeting_points": [
+          "Faqous Railway Station",
+          "Faqous Bus Stop",
+          "Faqous Main Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Hehia",
+        "meeting_points": [
+          "Hehia Railway Station",
+          "Hehia Bus Stop",
+          "Hehia Main Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Kafr Saqr",
+        "meeting_points": [
+          "Kafr Saqr Bus Stop",
+          "Kafr Saqr City Council",
+          "Main Square",
+          "Main Market"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Gharbia",
+    "city": "Tanta",
+    "areas": [
+      {
+        "name": "Tanta",
+        "meeting_points": [
+          "Tanta Railway Station",
+          "Tanta University",
+          "El Bahr Street",
+          "Tanta Mall"
+        ]
+      },
+      {
+        "name": "Mahalla El Kubra",
+        "meeting_points": [
+          "Mahalla Railway Station",
+          "El Shon Square",
+          "Baladeyet El Mahalla Club",
+          "El Bahr Street"
+        ]
+      },
+      {
+        "name": "Kafr El Zayat",
+        "meeting_points": [
+          "Kafr El Zayat Railway Station",
+          "Kafr El Zayat Bus Stop",
+          "Kafr El Zayat Bridge",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Zefta",
+        "meeting_points": [
+          "Zefta Railway Station",
+          "Zefta Bridge",
+          "Zefta Square",
+          "Zefta Bus Stop"
+        ]
+      },
+      {
+        "name": "Samanoud",
+        "meeting_points": [
+          "Samanoud Railway Station",
+          "Samanoud Bus Stop",
+          "Samanoud City Council",
+          "Samanoud Main Square"
+        ]
+      },
+      {
+        "name": "Basyoun",
+        "meeting_points": [
+          "Basyoun Bus Stop",
+          "Basyoun City Council",
+          "Basyoun Main Square",
+          "Basyoun Main Street"
+        ]
+      },
+      {
+        "name": "Qutour",
+        "meeting_points": [
+          "Qutour Railway Station",
+          "Qutour Bus Stop",
+          "Qutour City Council",
+          "Qutour Main Square"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Monufia",
+    "city": "Shebin El Kom",
+    "areas": [
+      {
+        "name": "Shebin El Kom",
+        "meeting_points": [
+          "Monufia University",
+          "Shebin El Kom Railway Station",
+          "Sharaf Square",
+          "Shebin El Kom Stadium"
+        ]
+      },
+      {
+        "name": "Menouf",
+        "meeting_points": [
+          "Menouf Railway Station",
+          "Menouf Bus Stop",
+          "Menouf City Council",
+          "El Geish Street"
+        ]
+      },
+      {
+        "name": "Ashmoun",
+        "meeting_points": [
+          "Ashmoun Railway Station",
+          "Ashmoun Bus Stop",
+          "Ashmoun Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Quesna",
+        "meeting_points": [
+          "Quesna Railway Station",
+          "Quesna Bus Stop",
+          "Industrial Zone",
+          "Quesna Square"
+        ]
+      },
+      {
+        "name": "Sadat City",
+        "meeting_points": [
+          "Sadat City Authority",
+          "Sadat University",
+          "Central District",
+          "Industrial Zone Gate"
+        ]
+      },
+      {
+        "name": "Tala",
+        "meeting_points": [
+          "Tala Railway Station",
+          "Tala Bus Stop",
+          "Tala City Council",
+          "Tala Main Square"
+        ]
+      },
+      {
+        "name": "Berket El Sabe",
+        "meeting_points": [
+          "Berket El Sabe Railway Station",
+          "Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Beheira",
+    "city": "Damanhur",
+    "areas": [
+      {
+        "name": "Damanhur",
+        "meeting_points": [
+          "Damanhur Railway Station",
+          "Damanhur University",
+          "Clock Square",
+          "Abdel Salam El Shazly Street"
+        ]
+      },
+      {
+        "name": "Kafr El Dawwar",
+        "meeting_points": [
+          "Kafr El Dawwar Railway Station",
+          "Kafr El Dawwar Bus Stop",
+          "El Geish Street",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Etay El Baroud",
+        "meeting_points": [
+          "Etay El Baroud Railway Station",
+          "Etay Bus Stop",
+          "Station Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Rashid",
+        "meeting_points": [
+          "Rashid Corniche",
+          "Qaitbay Citadel Rashid",
+          "Rashid Bus Stop",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Abu Hummus",
+        "meeting_points": [
+          "Abu Hummus Railway Station",
+          "Abu Hummus Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Kom Hamada",
+        "meeting_points": [
+          "Kom Hamada Railway Station",
+          "Kom Hamada Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Wadi El Natrun",
+        "meeting_points": [
+          "Wadi El Natrun Bus Stop",
+          "City Council",
+          "Main Square",
+          "Desert Road Entrance"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Kafr El Sheikh",
+    "city": "Kafr El Sheikh",
+    "areas": [
+      {
+        "name": "Kafr El Sheikh",
+        "meeting_points": [
+          "Kafr El Sheikh University",
+          "Kafr El Sheikh Station",
+          "El Nasr Square",
+          "Sanaa Park"
+        ]
+      },
+      {
+        "name": "Desouk",
+        "meeting_points": [
+          "Desouk Railway Station",
+          "Ibrahim El Desouki Square",
+          "Desouk Corniche",
+          "Desouk Bus Stop"
+        ]
+      },
+      {
+        "name": "Baltim",
+        "meeting_points": [
+          "Baltim Resort",
+          "Baltim Bus Stop",
+          "City Council",
+          "Baltim Corniche"
+        ]
+      },
+      {
+        "name": "Bella",
+        "meeting_points": [
+          "Bella Bus Stop",
+          "Bella City Council",
+          "Bella Square",
+          "El Gomhoria Street"
+        ]
+      },
+      {
+        "name": "Sidi Salem",
+        "meeting_points": [
+          "Sidi Salem Bus Stop",
+          "Sidi Salem City Council",
+          "Main Square",
+          "Main Market"
+        ]
+      },
+      {
+        "name": "Fuwwah",
+        "meeting_points": [
+          "Fuwwah Nile Corniche",
+          "Fuwwah Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Qallin",
+        "meeting_points": [
+          "Qallin Bus Stop",
+          "Qallin City Council",
+          "Main Square",
+          "Main Street"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Damietta",
+    "city": "Damietta",
+    "areas": [
+      {
+        "name": "Damietta City",
+        "meeting_points": [
+          "Damietta Corniche",
+          "Clock Square",
+          "Damietta Bus Stop",
+          "El Galaa Street"
+        ]
+      },
+      {
+        "name": "New Damietta",
+        "meeting_points": [
+          "Damietta University",
+          "First District",
+          "New Damietta Mall",
+          "New Damietta Beach"
+        ]
+      },
+      {
+        "name": "Ras El Bar",
+        "meeting_points": [
+          "El Lesan",
+          "Nile Street",
+          "Ras El Bar Corniche",
+          "El Gerbi Area"
+        ]
+      },
+      {
+        "name": "Faraskur",
+        "meeting_points": [
+          "Faraskur Bus Stop",
+          "City Council",
+          "Faraskur Square",
+          "Damietta-Mansoura Road"
+        ]
+      },
+      {
+        "name": "Kafr Saad",
+        "meeting_points": [
+          "Kafr Saad Bus Stop",
+          "Kafr Saad City Council",
+          "Main Square",
+          "Main Market"
+        ]
+      },
+      {
+        "name": "Zarqa",
+        "meeting_points": [
+          "Zarqa Bus Stop",
+          "Zarqa City Council",
+          "Main Square",
+          "Main Street"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Port Said",
+    "city": "Port Said",
+    "areas": [
+      {
+        "name": "Sharq District",
+        "meeting_points": [
+          "Tourist Walkway",
+          "Governorate Building",
+          "Tarh El Bahr Street",
+          "El Mansheya Square"
+        ]
+      },
+      {
+        "name": "Arab District",
+        "meeting_points": [
+          "Fish Market",
+          "El Thalathiny Street",
+          "Martyrs Square",
+          "Arab District Bus Stop"
+        ]
+      },
+      {
+        "name": "Port Fouad",
+        "meeting_points": [
+          "Port Fouad Ferry",
+          "Ferry Square",
+          "Port Fouad Club",
+          "Port Fouad Corniche"
+        ]
+      },
+      {
+        "name": "Zohour District",
+        "meeting_points": [
+          "Zohour Bus Stop",
+          "Omar Ibn El Khattab Area",
+          "Zohour Club",
+          "Mohamed Ali Street"
+        ]
+      },
+      {
+        "name": "Manakh District",
+        "meeting_points": [
+          "Manakh District Square",
+          "Manakh Bus Stop",
+          "Port Said Stadium",
+          "El Gomhoria Street"
+        ]
+      },
+      {
+        "name": "Dawahy District",
+        "meeting_points": [
+          "Dawahy Bus Stop",
+          "Dawahy District Office",
+          "Main Market",
+          "El Nasr Street"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Ismailia",
+    "city": "Ismailia",
+    "areas": [
+      {
+        "name": "Ismailia City",
+        "meeting_points": [
+          "Ismailia Railway Station",
+          "Sultan Hussein Street",
+          "Ismaily Club",
+          "Lake Timsah"
+        ]
+      },
+      {
+        "name": "Fayed",
+        "meeting_points": [
+          "Fayed Beach",
+          "Fayed Bus Stop",
+          "Fayed City Council",
+          "Ismailia-Suez Road"
+        ]
+      },
+      {
+        "name": "Qantara East",
+        "meeting_points": [
+          "Qantara East Bus Stop",
+          "Qantara Square",
+          "City Council",
+          "Peace Bridge"
+        ]
+      },
+      {
+        "name": "Qantara West",
+        "meeting_points": [
+          "Qantara West Bus Stop",
+          "City Council",
+          "Main Square",
+          "Canal Road"
+        ]
+      },
+      {
+        "name": "Tell El Kebir",
+        "meeting_points": [
+          "Tell El Kebir Railway Station",
+          "Tell El Kebir Bus Stop",
+          "Station Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Abu Suwir",
+        "meeting_points": [
+          "Abu Suwir Railway Station",
+          "Abu Suwir Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Suez",
+    "city": "Suez",
+    "areas": [
+      {
+        "name": "Arbaeen",
+        "meeting_points": [
+          "Arbaeen Square",
+          "El Geish Street",
+          "Arbaeen Bus Stop",
+          "Arbaeen District Office"
+        ]
+      },
+      {
+        "name": "Suez District",
+        "meeting_points": [
+          "Suez Railway Station",
+          "Suez Corniche",
+          "El Khadr Square",
+          "Port Said Street"
+        ]
+      },
+      {
+        "name": "Faisal District",
+        "meeting_points": [
+          "Faisal District",
+          "Faisal Bus Stop",
+          "Ahmed Orabi Street",
+          "Suez Club"
+        ]
+      },
+      {
+        "name": "Ataka",
+        "meeting_points": [
+          "Ataka Area",
+          "Adabiya Port",
+          "Ain Sokhna Road",
+          "Ataka Bus Stop"
+        ]
+      },
+      {
+        "name": "Ganayen",
+        "meeting_points": [
+          "Ganayen District Office",
+          "Ganayen Bus Stop",
+          "Main Square",
+          "Suez-Ismailia Road"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Matrouh",
+    "city": "Marsa Matrouh",
+    "areas": [
+      {
+        "name": "Marsa Matrouh",
+        "meeting_points": [
+          "Marsa Matrouh Railway Station",
+          "Alexandria Street",
+          "Rommel Beach",
+          "Clock Square"
+        ]
+      },
+      {
+        "name": "El Alamein",
+        "meeting_points": [
+          "El Alamein Museum",
+          "El Alamein Station",
+          "Marina El Alamein",
+          "El Alamein Bus Stop"
+        ]
+      },
+      {
+        "name": "Siwa",
+        "meeting_points": [
+          "Siwa Market Square",
+          "Shali Fortress",
+          "Cleopatra Spring",
+          "Siwa Bus Stop"
+        ]
+      },
+      {
+        "name": "Dabaa",
+        "meeting_points": [
+          "Dabaa Bus Stop",
+          "City Council",
+          "Matrouh-Alexandria Road",
+          "Dabaa Square"
+        ]
+      },
+      {
+        "name": "Salloum",
+        "meeting_points": [
+          "Salloum Bus Stop",
+          "Salloum City Council",
+          "Main Square",
+          "Coastal Road"
+        ]
+      },
+      {
+        "name": "Sidi Barrani",
+        "meeting_points": [
+          "Sidi Barrani Bus Stop",
+          "City Council",
+          "Main Square",
+          "Coastal Road"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "North Sinai",
+    "city": "Arish",
+    "areas": [
+      {
+        "name": "Arish",
+        "meeting_points": [
+          "El Rifai Square",
+          "Arish Corniche",
+          "Arish University",
+          "Arish Bus Stop"
+        ]
+      },
+      {
+        "name": "Bir El Abd",
+        "meeting_points": [
+          "Bir El Abd Bus Stop",
+          "City Council",
+          "Bir El Abd Square",
+          "Arish Road"
+        ]
+      },
+      {
+        "name": "Sheikh Zuweid",
+        "meeting_points": [
+          "Sheikh Zuweid Bus Stop",
+          "City Council",
+          "Sheikh Zuweid Square",
+          "Arish-Rafah Road"
+        ]
+      },
+      {
+        "name": "Rafah",
+        "meeting_points": [
+          "Rafah Bus Stop",
+          "City Council",
+          "Rafah Square",
+          "Rafah Road"
+        ]
+      },
+      {
+        "name": "Nakhl",
+        "meeting_points": [
+          "Nakhl Bus Stop",
+          "City Council",
+          "Nakhl Square",
+          "Central Sinai Road"
+        ]
+      },
+      {
+        "name": "Hasana",
+        "meeting_points": [
+          "Hasana Bus Stop",
+          "City Council",
+          "Main Square",
+          "Central Sinai Road"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "South Sinai",
+    "city": "Sharm El Sheikh",
+    "areas": [
+      {
+        "name": "Sharm El Sheikh",
+        "meeting_points": [
+          "Naama Bay",
+          "Old Market",
+          "SOHO Square",
+          "Hollywood Sharm El Sheikh"
+        ]
+      },
+      {
+        "name": "Dahab",
+        "meeting_points": [
+          "Dahab Promenade",
+          "Blue Hole Road",
+          "Dahab Square",
+          "Dahab Bus Stop"
+        ]
+      },
+      {
+        "name": "El Tor",
+        "meeting_points": [
+          "El Tor Bus Stop",
+          "El Tor Corniche",
+          "Governorate Building",
+          "King Salman University"
+        ]
+      },
+      {
+        "name": "Nuweiba",
+        "meeting_points": [
+          "Nuweiba Port",
+          "Nuweiba Bus Stop",
+          "Nuweiba Corniche",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Ras Sudr",
+        "meeting_points": [
+          "Ras Sudr Bus Stop",
+          "Ras Sudr Corniche",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Saint Catherine",
+        "meeting_points": [
+          "Saint Catherine Bus Stop",
+          "Saint Catherine Monastery Area",
+          "City Council",
+          "Main Square"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Beni Suef",
+    "city": "Beni Suef",
+    "areas": [
+      {
+        "name": "Beni Suef City",
+        "meeting_points": [
+          "Beni Suef Railway Station",
+          "Beni Suef University",
+          "Nile Corniche",
+          "Directorate Square"
+        ]
+      },
+      {
+        "name": "New Beni Suef",
+        "meeting_points": [
+          "Nahda University",
+          "New Beni Suef Bus Stop",
+          "City Authority",
+          "Army Road"
+        ]
+      },
+      {
+        "name": "Wasta",
+        "meeting_points": [
+          "Wasta Railway Station",
+          "Wasta Bus Stop",
+          "Wasta Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Fashn",
+        "meeting_points": [
+          "Fashn Railway Station",
+          "Fashn Bus Stop",
+          "City Council",
+          "Fashn Square"
+        ]
+      },
+      {
+        "name": "Naser",
+        "meeting_points": [
+          "Naser Railway Station",
+          "Naser Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Beba",
+        "meeting_points": [
+          "Beba Railway Station",
+          "Beba Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Ihnasia",
+        "meeting_points": [
+          "Ihnasia Bus Stop",
+          "City Council",
+          "Main Square",
+          "Main Market"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Faiyum",
+    "city": "Faiyum",
+    "areas": [
+      {
+        "name": "Faiyum City",
+        "meeting_points": [
+          "Faiyum Railway Station",
+          "Faiyum University",
+          "Waterwheels Square",
+          "Qarun Lake Road"
+        ]
+      },
+      {
+        "name": "Sinnuris",
+        "meeting_points": [
+          "Sinnuris Bus Stop",
+          "City Council",
+          "Sinnuris Square",
+          "Faiyum-Cairo Road"
+        ]
+      },
+      {
+        "name": "Etsa",
+        "meeting_points": [
+          "Etsa Bus Stop",
+          "Etsa City Council",
+          "Etsa Square",
+          "Faiyum-Etsa Road"
+        ]
+      },
+      {
+        "name": "Tamiya",
+        "meeting_points": [
+          "Tamiya Bus Stop",
+          "Tamiya City Council",
+          "Tamiya Square",
+          "Cairo-Faiyum Road"
+        ]
+      },
+      {
+        "name": "Abshaway",
+        "meeting_points": [
+          "Abshaway Bus Stop",
+          "City Council",
+          "Main Square",
+          "Lake Qarun Road"
+        ]
+      },
+      {
+        "name": "Youssef El Seddik",
+        "meeting_points": [
+          "Youssef El Seddik Bus Stop",
+          "City Council",
+          "Main Square",
+          "Tunis Village Road"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Minya",
+    "city": "Minya",
+    "areas": [
+      {
+        "name": "Minya City",
+        "meeting_points": [
+          "Minya Railway Station",
+          "Minya University",
+          "Nile Corniche",
+          "Palace Square"
+        ]
+      },
+      {
+        "name": "Mallawi",
+        "meeting_points": [
+          "Mallawi Railway Station",
+          "Mallawi Bus Stop",
+          "El Basha Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Samalut",
+        "meeting_points": [
+          "Samalut Railway Station",
+          "Samalut Bus Stop",
+          "Samalut Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Beni Mazar",
+        "meeting_points": [
+          "Beni Mazar Railway Station",
+          "Beni Mazar Bus Stop",
+          "Station Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Abu Qurqas",
+        "meeting_points": [
+          "Abu Qurqas Railway Station",
+          "Abu Qurqas Bus Stop",
+          "City Council",
+          "Abu Qurqas Square"
+        ]
+      },
+      {
+        "name": "Maghagha",
+        "meeting_points": [
+          "Maghagha Railway Station",
+          "Maghagha Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Matay",
+        "meeting_points": [
+          "Matay Railway Station",
+          "Matay Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Deir Mawas",
+        "meeting_points": [
+          "Deir Mawas Railway Station",
+          "Deir Mawas Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Assiut",
+    "city": "Assiut",
+    "areas": [
+      {
+        "name": "Assiut City",
+        "meeting_points": [
+          "Assiut Railway Station",
+          "Assiut University",
+          "Station Square",
+          "El Gomhoria Street"
+        ]
+      },
+      {
+        "name": "New Assiut",
+        "meeting_points": [
+          "New Assiut City Authority",
+          "Sphinx University",
+          "New Assiut Bus Stop",
+          "New Assiut Road"
+        ]
+      },
+      {
+        "name": "Dairut",
+        "meeting_points": [
+          "Dairut Railway Station",
+          "Dairut Bus Stop",
+          "City Council",
+          "Dairut Square"
+        ]
+      },
+      {
+        "name": "Abutig",
+        "meeting_points": [
+          "Abutig Railway Station",
+          "Abutig Bus Stop",
+          "City Council",
+          "Abutig Square"
+        ]
+      },
+      {
+        "name": "Manfalut",
+        "meeting_points": [
+          "Manfalut Railway Station",
+          "Manfalut Bus Stop",
+          "City Council",
+          "Manfalut Square"
+        ]
+      },
+      {
+        "name": "Qusiya",
+        "meeting_points": [
+          "Qusiya Railway Station",
+          "Qusiya Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Abnoub",
+        "meeting_points": [
+          "Abnoub Bus Stop",
+          "City Council",
+          "Main Square",
+          "Main Market"
+        ]
+      },
+      {
+        "name": "Sahel Selim",
+        "meeting_points": [
+          "Sahel Selim Bus Stop",
+          "City Council",
+          "Main Square",
+          "Main Road"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Sohag",
+    "city": "Sohag",
+    "areas": [
+      {
+        "name": "Sohag City",
+        "meeting_points": [
+          "Sohag Railway Station",
+          "Sohag University",
+          "Culture Square",
+          "Nile Corniche"
+        ]
+      },
+      {
+        "name": "Akhmim",
+        "meeting_points": [
+          "Akhmim Bus Stop",
+          "Akhmim City Council",
+          "Akhmim Square",
+          "Sohag-Akhmim Road"
+        ]
+      },
+      {
+        "name": "Girga",
+        "meeting_points": [
+          "Girga Railway Station",
+          "Girga Bus Stop",
+          "Girga Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Tahta",
+        "meeting_points": [
+          "Tahta Railway Station",
+          "Tahta Bus Stop",
+          "Tahta Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Baliana",
+        "meeting_points": [
+          "Baliana Railway Station",
+          "Baliana Bus Stop",
+          "City Council",
+          "Baliana Square"
+        ]
+      },
+      {
+        "name": "Maragha",
+        "meeting_points": [
+          "Maragha Railway Station",
+          "Maragha Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Tama",
+        "meeting_points": [
+          "Tama Railway Station",
+          "Tama Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Dar El Salam",
+        "meeting_points": [
+          "Dar El Salam Bus Stop",
+          "City Council",
+          "Main Square",
+          "Main Market"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Qena",
+    "city": "Qena",
+    "areas": [
+      {
+        "name": "Qena City",
+        "meeting_points": [
+          "Qena Railway Station",
+          "South Valley University",
+          "Nile Corniche",
+          "Clock Square"
+        ]
+      },
+      {
+        "name": "Nag Hammadi",
+        "meeting_points": [
+          "Nag Hammadi Railway Station",
+          "Nag Hammadi Bus Stop",
+          "Awqaf Square",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Dishna",
+        "meeting_points": [
+          "Dishna Railway Station",
+          "Dishna Bus Stop",
+          "City Council",
+          "Dishna Square"
+        ]
+      },
+      {
+        "name": "Qift",
+        "meeting_points": [
+          "Qift Bus Stop",
+          "Qift City Council",
+          "Qift Square",
+          "Qena-Luxor Road"
+        ]
+      },
+      {
+        "name": "Qus",
+        "meeting_points": [
+          "Qus Railway Station",
+          "Qus Bus Stop",
+          "City Council",
+          "Qus Square"
+        ]
+      },
+      {
+        "name": "Farshut",
+        "meeting_points": [
+          "Farshut Railway Station",
+          "Farshut Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      },
+      {
+        "name": "Abu Tesht",
+        "meeting_points": [
+          "Abu Tesht Railway Station",
+          "Abu Tesht Bus Stop",
+          "City Council",
+          "Main Square"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Luxor",
+    "city": "Luxor",
+    "areas": [
+      {
+        "name": "Luxor City",
+        "meeting_points": [
+          "Luxor Railway Station",
+          "Luxor Temple",
+          "Nile Corniche",
+          "Station Square"
+        ]
+      },
+      {
+        "name": "Karnak",
+        "meeting_points": [
+          "Karnak Temple",
+          "Karnak Bus Stop",
+          "Karnak Street",
+          "Visitor Center"
+        ]
+      },
+      {
+        "name": "Bayadeya",
+        "meeting_points": [
+          "Bayadeya Bus Stop",
+          "City Council",
+          "Luxor-Aswan Road",
+          "Bayadeya Square"
+        ]
+      },
+      {
+        "name": "Esna",
+        "meeting_points": [
+          "Esna Railway Station",
+          "Esna Bus Stop",
+          "Esna Temple",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Armant",
+        "meeting_points": [
+          "Armant Bus Stop",
+          "Armant City Council",
+          "Armant Square",
+          "Luxor-Armant Road"
+        ]
+      },
+      {
+        "name": "Qurna",
+        "meeting_points": [
+          "Qurna Bus Stop",
+          "Valley of the Kings Road",
+          "Qurna City Council",
+          "West Bank Ferry Area"
+        ]
+      },
+      {
+        "name": "Tod",
+        "meeting_points": [
+          "Tod Bus Stop",
+          "Tod City Council",
+          "Main Square",
+          "Luxor-Aswan Road"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Aswan",
+    "city": "Aswan",
+    "areas": [
+      {
+        "name": "Aswan City",
+        "meeting_points": [
+          "Aswan Railway Station",
+          "Nile Corniche",
+          "Station Square",
+          "Tourist Market"
+        ]
+      },
+      {
+        "name": "Kom Ombo",
+        "meeting_points": [
+          "Kom Ombo Railway Station",
+          "Kom Ombo Temple",
+          "Kom Ombo Bus Stop",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Edfu",
+        "meeting_points": [
+          "Edfu Railway Station",
+          "Edfu Temple",
+          "Edfu Bus Stop",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Daraw",
+        "meeting_points": [
+          "Daraw Bus Stop",
+          "City Council",
+          "Daraw Market",
+          "Aswan-Kom Ombo Road"
+        ]
+      },
+      {
+        "name": "Abu Simbel",
+        "meeting_points": [
+          "Abu Simbel Temple",
+          "Abu Simbel Bus Stop",
+          "Abu Simbel Airport",
+          "City Council"
+        ]
+      },
+      {
+        "name": "Nasr El Nuba",
+        "meeting_points": [
+          "Nasr El Nuba Bus Stop",
+          "City Council",
+          "Main Square",
+          "Nuba Road"
+        ]
+      },
+      {
+        "name": "Kalabsha",
+        "meeting_points": [
+          "Kalabsha Area",
+          "Kalabsha Temple Road",
+          "Bus Stop",
+          "Main Square"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "Red Sea",
+    "city": "Hurghada",
+    "areas": [
+      {
+        "name": "Hurghada",
+        "meeting_points": [
+          "Tourist Promenade",
+          "City Center Hurghada",
+          "Dahar Square",
+          "Hurghada Marina"
+        ]
+      },
+      {
+        "name": "Safaga",
+        "meeting_points": [
+          "Safaga Port",
+          "Safaga Bus Stop",
+          "City Council",
+          "Safaga Corniche"
+        ]
+      },
+      {
+        "name": "Quseir",
+        "meeting_points": [
+          "Quseir Bus Stop",
+          "City Council",
+          "Quseir Corniche",
+          "Quseir Fortress"
+        ]
+      },
+      {
+        "name": "Ras Gharib",
+        "meeting_points": [
+          "Ras Gharib Bus Stop",
+          "City Council",
+          "Ras Gharib Corniche",
+          "Hurghada-Suez Road"
+        ]
+      },
+      {
+        "name": "Marsa Alam",
+        "meeting_points": [
+          "Marsa Alam Bus Stop",
+          "Marsa Alam Marina",
+          "Marsa Alam Corniche",
+          "Marsa Alam Airport Road"
+        ]
+      },
+      {
+        "name": "El Gouna",
+        "meeting_points": [
+          "Downtown El Gouna",
+          "Abu Tig Marina",
+          "El Gouna Bus Stop",
+          "El Gouna Entrance"
+        ]
+      },
+      {
+        "name": "Makadi Bay",
+        "meeting_points": [
+          "Makadi Bay Entrance",
+          "Makadi Mall Area",
+          "Hotel Zone Gate",
+          "Hurghada-Safaga Road"
+        ]
+      }
+    ]
+  },
+  {
+    "governorate": "New Valley",
+    "city": "Kharga",
+    "areas": [
+      {
+        "name": "Kharga",
+        "meeting_points": [
+          "Kharga Bus Stop",
+          "New Valley University",
+          "El Basateen Square",
+          "New Valley Museum"
+        ]
+      },
+      {
+        "name": "Dakhla",
+        "meeting_points": [
+          "Mut Bus Stop",
+          "Dakhla Oasis",
+          "City Council",
+          "Mut Square"
+        ]
+      },
+      {
+        "name": "Farafra",
+        "meeting_points": [
+          "Farafra Bus Stop",
+          "Farafra Square",
+          "City Council",
+          "Oases Road"
+        ]
+      },
+      {
+        "name": "Paris",
+        "meeting_points": [
+          "Paris Bus Stop",
+          "City Council",
+          "Paris Square",
+          "Kharga-Paris Road"
+        ]
+      },
+      {
+        "name": "Balat",
+        "meeting_points": [
+          "Balat Bus Stop",
+          "City Council",
+          "Balat Square",
+          "Dakhla Road"
+        ]
+      },
+      {
+        "name": "Baris",
+        "meeting_points": [
+          "Baris Bus Stop",
+          "Baris City Council",
+          "Main Square",
+          "Kharga-Baris Road"
+        ]
+      }
+    ]
+  }
+]

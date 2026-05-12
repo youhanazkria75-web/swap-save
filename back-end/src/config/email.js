@@ -1,0 +1,153 @@
+const nodemailer = require("nodemailer");
+
+const requiredSmtpEnv = [
+  "SMTP_HOST",
+  "SMTP_PORT",
+  "SMTP_SECURE",
+  "SMTP_USER",
+  "SMTP_PASS",
+  "SMTP_FROM",
+];
+
+const getEnv = (key) => process.env[key]?.trim();
+
+const getMissingSmtpConfig = () => {
+  return requiredSmtpEnv.filter((key) => !getEnv(key));
+};
+
+const hasSmtpConfig = () => {
+  return getMissingSmtpConfig().length === 0;
+};
+
+const createTransporter = () => {
+  if (!hasSmtpConfig()) return null;
+
+  return nodemailer.createTransport({
+    host: getEnv("SMTP_HOST"),
+    port: Number(getEnv("SMTP_PORT")),
+    secure: getEnv("SMTP_SECURE") === "true",
+    auth: {
+      user: getEnv("SMTP_USER"),
+      pass: getEnv("SMTP_PASS"),
+    },
+  });
+};
+
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const formatPlainText = (value) => String(value ?? "").replace(/\r\n/g, "\n");
+
+const sendVerificationEmail = async ({ to, name, verificationUrl }) => {
+  const from = getEnv("SMTP_FROM");
+  const transporter = createTransporter();
+
+  if (!transporter) {
+    if (process.env.NODE_ENV === "production") {
+      console.warn(
+        `[email] SMTP is not configured. Missing: ${getMissingSmtpConfig().join(", ")}. No verification email was sent.`
+      );
+    } else {
+      console.warn(
+        `[email] SMTP is not configured. Missing: ${getMissingSmtpConfig().join(", ")}. No email was sent. Verification link:`,
+        verificationUrl
+      );
+    }
+    return;
+  }
+
+  await transporter.verify();
+
+  await transporter.sendMail({
+    from,
+    to,
+    subject: "Verify your Swap & Save email",
+    text: `Hi ${name},\n\nVerify your email by opening this link:\n${verificationUrl}\n\nThis link expires in 24 hours.`,
+    html: `
+      <p>Hi ${name},</p>
+      <p>Verify your email by opening this link:</p>
+      <p><a href="${verificationUrl}">Verify email</a></p>
+      <p>This link expires in 24 hours.</p>
+    `,
+  });
+};
+
+const sendPasswordResetEmail = async ({ to, name, resetUrl }) => {
+  const from = getEnv("SMTP_FROM");
+  const transporter = createTransporter();
+
+  if (!transporter) {
+    if (process.env.NODE_ENV === "production") {
+      console.warn(
+        `[email] SMTP is not configured. Missing: ${getMissingSmtpConfig().join(", ")}. No password reset email was sent.`
+      );
+    } else {
+      console.warn(
+        `[email] SMTP is not configured. Missing: ${getMissingSmtpConfig().join(", ")}. No email was sent. Password reset link:`,
+        resetUrl
+      );
+    }
+    return;
+  }
+
+  await transporter.verify();
+
+  await transporter.sendMail({
+    from,
+    to,
+    subject: "Reset your Swap & Save password",
+    text: `Hi ${name},\n\nReset your password by opening this link:\n${resetUrl}\n\nThis link expires in 1 hour. If you did not request this, you can ignore this email.`,
+    html: `
+      <p>Hi ${name},</p>
+      <p>Reset your password by opening this link:</p>
+      <p><a href="${resetUrl}">Reset password</a></p>
+      <p>This link expires in 1 hour. If you did not request this, you can ignore this email.</p>
+    `,
+  });
+};
+
+const sendSupportReplyEmail = async ({ to, name, ticketSubject, reply }) => {
+  const from = getEnv("SMTP_FROM");
+  const transporter = createTransporter();
+
+  if (!transporter) {
+    if (process.env.NODE_ENV === "production") {
+      console.warn(
+        `[email] SMTP is not configured. Missing: ${getMissingSmtpConfig().join(", ")}. No support reply email was sent.`
+      );
+    }
+    return { sent: false, skipped: true };
+  }
+
+  const safeName = name || "there";
+  const plainReply = formatPlainText(reply);
+  const plainSubject = formatPlainText(ticketSubject);
+
+  await transporter.verify();
+
+  await transporter.sendMail({
+    from,
+    to,
+    subject: "Update on your Swap & Save support request",
+    text: `Hi ${safeName},\n\nWe have an update on your support request${plainSubject ? `: ${plainSubject}` : ""}.\n\n${plainReply}\n\nSwap & Save Support`,
+    html: `
+      <p>Hi ${escapeHtml(safeName)},</p>
+      <p>We have an update on your support request${plainSubject ? `: <strong>${escapeHtml(plainSubject)}</strong>` : ""}.</p>
+      <p>${escapeHtml(plainReply).replace(/\n/g, "<br>")}</p>
+      <p>Swap &amp; Save Support</p>
+    `,
+  });
+
+  return { sent: true, skipped: false };
+};
+
+module.exports = {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  sendSupportReplyEmail,
+};
