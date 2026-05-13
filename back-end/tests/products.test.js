@@ -2,6 +2,7 @@ process.env.JWT_SECRET = "test_jwt_secret";
 
 jest.mock("cloudinary", () => ({
   v2: {
+    config: jest.fn(),
     uploader: {
       upload: jest.fn(),
     },
@@ -15,6 +16,7 @@ const { MongoMemoryServer } = require("mongodb-memory-server");
 const { v2: cloudinary } = require("cloudinary");
 
 const app = require("../src/app");
+const logger = require("../src/config/logger");
 const Notification = require("../src/models/Notification");
 const Product = require("../src/models/Product");
 const ProductView = require("../src/models/ProductView");
@@ -126,6 +128,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   delete process.env.CLOUDINARY_URL;
+  cloudinary.config.mockReset();
   cloudinary.uploader.upload.mockReset();
 });
 
@@ -155,7 +158,7 @@ describe("Products API", () => {
 
   test("Upload product images stores Cloudinary secure URLs when configured", async () => {
     const cloudinaryUrl = "https://res.cloudinary.com/swap-save/image/upload/v1/products/photo.jpg";
-    process.env.CLOUDINARY_URL = "cloudinary://api-key:api-secret@swap-save";
+    process.env.CLOUDINARY_URL = " 'cloudinary://api-key:api-secret@swap-save' ";
     cloudinary.uploader.upload.mockResolvedValueOnce({
       secure_url: cloudinaryUrl,
       public_id: "swap-save/products/photo",
@@ -168,6 +171,12 @@ describe("Products API", () => {
 
     expect(uploadRes.statusCode).toBe(200);
     expect(uploadRes.body.images).toEqual([cloudinaryUrl]);
+    expect(cloudinary.config).toHaveBeenCalledWith({
+      cloud_name: "swap-save",
+      api_key: "api-key",
+      api_secret: "api-secret",
+      secure: true,
+    });
     expect(cloudinary.uploader.upload).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
@@ -218,6 +227,40 @@ describe("Products API", () => {
 
     const user = await User.findById(ownerId);
     expect(user.avatar).toBe(cloudinaryUrl);
+  });
+
+  test("Cloudinary upload failure returns safe error without exposing secrets", async () => {
+    const secret = "super-secret";
+    const configuredUrl = `cloudinary://api-key:${secret}@swap-save`;
+    const warnSpy = jest.spyOn(logger, "warn").mockImplementation(() => {});
+    process.env.CLOUDINARY_URL = configuredUrl;
+
+    const upstreamError = new Error(`Unauthorized with ${configuredUrl}`);
+    upstreamError.name = "CloudinaryError";
+    upstreamError.http_code = 401;
+    upstreamError.code = "AUTH_FAILED";
+    cloudinary.uploader.upload.mockRejectedValueOnce(upstreamError);
+
+    try {
+      const res = await request(app)
+        .post("/users/me/avatar")
+        .set("Authorization", `Bearer ${token}`)
+        .attach("avatar", tinyJpeg, "avatar.jpg");
+
+      expect(res.statusCode).toBe(502);
+      expect(res.body.message).toBe("Image upload failed");
+      expect(JSON.stringify(res.body)).not.toContain(secret);
+      expect(JSON.stringify(res.body)).not.toContain(configuredUrl);
+
+      const warningText = warnSpy.mock.calls.flat().join(" ");
+      expect(warningText).toContain("[cloudinary] Image upload failed");
+      expect(warningText).toContain("\"category\":\"auth\"");
+      expect(warningText).toContain("\"http_code\":401");
+      expect(warningText).not.toContain(secret);
+      expect(warningText).not.toContain(configuredUrl);
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 
   test("Reject spoofed product image uploads", async () => {
