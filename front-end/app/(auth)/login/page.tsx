@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 
 const EMAIL_NOT_VERIFIED_CODE = 'EMAIL_NOT_VERIFIED'
 const UNVERIFIED_LOGIN_MESSAGE = 'Please verify your email before logging in.'
+const RESEND_VERIFICATION_SUCCESS_MESSAGE = 'Verification email sent. Please check your inbox and spam folder.'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -80,7 +81,7 @@ export default function LoginPage() {
         return
       }
 
-      setResendMessage('Verification email sent. Please check your inbox and spam folder.')
+      setResendMessage(RESEND_VERIFICATION_SUCCESS_MESSAGE)
     } catch (_error) {
       setResendMessage('Could not send verification email right now. Please try again.')
     } finally {
@@ -120,7 +121,16 @@ export default function LoginPage() {
                 {resendLoading ? 'Sending...' : 'Resend verification email'}
               </button>
               {resendMessage && (
-                <p className="text-xs text-destructive/90">{resendMessage}</p>
+                <p
+                  className={cn(
+                    'text-xs',
+                    resendMessage === RESEND_VERIFICATION_SUCCESS_MESSAGE
+                      ? 'text-green-600'
+                      : 'text-destructive/90'
+                  )}
+                >
+                  {resendMessage}
+                </p>
               )}
             </div>
           )}
