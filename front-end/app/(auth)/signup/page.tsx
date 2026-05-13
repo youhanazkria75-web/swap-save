@@ -36,6 +36,7 @@ const STEPS = [
 
 const EGYPTIAN_MOBILE_REGEX = /^01\d{9}$/
 const EGYPT_COUNTRY = 'Egypt'
+const EMAIL_NOT_VERIFIED_CODE = 'EMAIL_NOT_VERIFIED'
 
 type EgyptLocationArea = { name: string; meeting_points?: string[] }
 type EgyptLocationEntry = { governorate: string; city: string; areas: EgyptLocationArea[] }
@@ -132,6 +133,9 @@ export default function SignupPage() {
 
   const [step, setStep] = useState(1)
   const [verificationEmailSent, setVerificationEmailSent] = useState(false)
+  const [accountNeedsVerification, setAccountNeedsVerification] = useState(false)
+  const [verificationNotice, setVerificationNotice] = useState('')
+  const [resendMessage, setResendMessage] = useState('')
   const [resendLoading, setResendLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -207,6 +211,9 @@ export default function SignupPage() {
     const city = normalizeCityValue(form.city)
     const area = normalizeAreaValue(city, form.area)
 
+    setVerificationNotice('')
+    setResendMessage('')
+
     const result = await signup({
       firstName: form.firstName, lastName: form.lastName,
       email: form.email, phone: form.phone,
@@ -215,8 +222,24 @@ export default function SignupPage() {
       password: form.password,
     })
     if (result.success) {
-      setVerificationEmailSent(true)
-      toast.success('Account created!', { description: 'Check your inbox to verify your email.' })
+      const emailSent = result.verificationEmailSent !== false
+
+      setAccountNeedsVerification(true)
+      setVerificationEmailSent(emailSent)
+
+      if (emailSent) {
+        setVerificationNotice('')
+        toast.success('Account created!', { description: 'Check your inbox to verify your email.' })
+      } else {
+        setVerificationNotice('Your account was created, but we could not send the verification email right now.')
+        toast.error('Account created, but the verification email was not sent.')
+      }
+    } else if (result.code === EMAIL_NOT_VERIFIED_CODE || result.canResendVerification) {
+      setAccountNeedsVerification(true)
+      setVerificationEmailSent(false)
+      setVerificationNotice('This account already exists but still needs email verification.')
+      setStep(4)
+      toast.info('This email still needs verification. You can resend the verification email.')
     } else {
       toast.error(result.error || 'Signup failed')
       setStep(1)
@@ -224,8 +247,15 @@ export default function SignupPage() {
   }
 
   const resendVerificationEmail = async () => {
-    if (!form.email) return
+    const email = form.email.trim()
+
+    if (!email) {
+      setResendMessage('Enter your email address first.')
+      return
+    }
+
     setResendLoading(true)
+    setResendMessage('')
 
     try {
       const res = await fetch(`${API_BASE_URL}/auth/resend-verification-email`, {
@@ -233,22 +263,39 @@ export default function SignupPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: form.email }),
+        body: JSON.stringify({ email }),
       })
       const data = await res.json()
+      const emailSent = data.verification_email_sent !== false && data.verificationEmailSent !== false
 
-      if (!res.ok) {
-        toast.error(data.message || 'Could not resend verification email')
+      if (!res.ok || !emailSent) {
+        setResendMessage('Could not send verification email right now. Please try again.')
+        toast.error('Could not send verification email right now. Please try again.')
         return
       }
 
+      setVerificationEmailSent(true)
+      setVerificationNotice('')
+      setResendMessage('Verification email sent. Please check your inbox and spam folder.')
       toast.success('Verification email sent')
     } catch (_error) {
+      setResendMessage('Could not send verification email right now. Please try again.')
       toast.error('Could not resend verification email. Please try again.')
     } finally {
       setResendLoading(false)
     }
   }
+
+  const verifyStepTitle = accountNeedsVerification
+    ? verificationEmailSent
+      ? 'Check your inbox'
+      : 'Verification email not sent'
+    : 'Verify your email'
+  const verifyStepDescription = accountNeedsVerification
+    ? verificationEmailSent
+      ? `We sent a verification link to ${form.email}`
+      : 'Your account is waiting for email verification. Resend the verification email when you are ready.'
+    : 'Create your account and we will email you a verification link.'
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -578,19 +625,27 @@ export default function SignupPage() {
               }
             </div>
             <h2 className="text-lg font-bold mb-1">
-              {verificationEmailSent ? 'Check your inbox' : 'Verify your email'}
+              {verifyStepTitle}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {verificationEmailSent
-                ? `We sent a verification link to ${form.email}`
-                : 'Create your account and we will email you a verification link.'}
+              {verifyStepDescription}
             </p>
           </div>
+
+          {accountNeedsVerification && !verificationEmailSent && verificationNotice && (
+            <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+              {verificationNotice}
+            </div>
+          )}
 
           {/* Email verification */}
           <div className={cn(
             'p-4 rounded-xl border transition-all',
-            verificationEmailSent ? 'border-green-200 bg-green-50' : 'border-border bg-muted/50'
+            verificationEmailSent
+              ? 'border-green-200 bg-green-50'
+              : accountNeedsVerification
+                ? 'border-destructive/20 bg-destructive/10'
+                : 'border-border bg-muted/50'
           )}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -603,6 +658,10 @@ export default function SignupPage() {
               {verificationEmailSent ? (
                 <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
                   <Check className="h-3.5 w-3.5" /> Sent
+                </span>
+              ) : accountNeedsVerification ? (
+                <span className="text-xs text-destructive font-medium">
+                  Not sent
                 </span>
               ) : null}
             </div>
@@ -640,23 +699,29 @@ export default function SignupPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setStep(3)} disabled={verificationEmailSent}>
+            <Button variant="outline" className="flex-1" onClick={() => setStep(3)} disabled={accountNeedsVerification}>
               <ArrowLeft className="h-4 w-4" /> Back
             </Button>
             <Button
               className="flex-1"
               onClick={handleSubmit}
               loading={isAuthLoading}
-              disabled={verificationEmailSent}
+              disabled={accountNeedsVerification}
             >
-              {verificationEmailSent ? 'Email sent' : 'Create account'} <ArrowRight className="h-4 w-4" />
+              {accountNeedsVerification
+                ? verificationEmailSent
+                  ? 'Email sent'
+                  : 'Account created'
+                : 'Create account'} <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
 
-          {verificationEmailSent && (
+          {accountNeedsVerification && (
             <div className="space-y-2 text-center">
               <p className="text-xs text-muted-foreground">
-                Open the link in your email to activate your account.
+                {verificationEmailSent
+                  ? 'Open the link in your email to activate your account.'
+                  : 'Use resend to get a fresh verification link.'}
               </p>
               <button
                 type="button"
@@ -666,6 +731,9 @@ export default function SignupPage() {
               >
                 {resendLoading ? 'Sending...' : 'Resend verification email'}
               </button>
+              {resendMessage && (
+                <p className="text-xs text-muted-foreground">{resendMessage}</p>
+              )}
             </div>
           )}
         </div>

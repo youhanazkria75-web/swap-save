@@ -11,6 +11,9 @@ import { toast } from 'sonner'
 import { API_BASE_URL } from '@/lib/api-config'
 import { cn } from '@/lib/utils'
 
+const EMAIL_NOT_VERIFIED_CODE = 'EMAIL_NOT_VERIFIED'
+const UNVERIFIED_LOGIN_MESSAGE = 'Please verify your email before logging in.'
+
 export default function LoginPage() {
   const router = useRouter()
   const { login, isAuthLoading } = useApp()
@@ -19,6 +22,12 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [loginErrorCode, setLoginErrorCode] = useState('')
+  const [resendLoading, setResendLoading] = useState(false)
+  const [resendMessage, setResendMessage] = useState('')
+
+  const shouldShowResendVerification =
+    loginErrorCode === EMAIL_NOT_VERIFIED_CODE || errors.form === UNVERIFIED_LOGIN_MESSAGE
 
   const validate = () => {
     const e: Record<string, string> = {}
@@ -32,12 +41,50 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate()) return
+    setLoginErrorCode('')
+    setResendMessage('')
     const result = await login(form.email, form.password)
     if (result.success) {
       toast.success('Welcome back!')
       router.push(result.user?.isAdmin ? '/admin' : '/user/dashboard')
     } else {
+      setLoginErrorCode(result.code || '')
       setErrors({ form: result.error || 'Login failed' })
+    }
+  }
+
+  const handleResendVerification = async () => {
+    const email = form.email.trim()
+
+    if (!email) {
+      setResendMessage('Enter your email address first.')
+      return
+    }
+
+    setResendLoading(true)
+    setResendMessage('')
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/resend-verification-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      const emailSent = data.verification_email_sent !== false && data.verificationEmailSent !== false
+
+      if (!res.ok || !emailSent) {
+        setResendMessage('Could not send verification email right now. Please try again.')
+        return
+      }
+
+      setResendMessage('Verification email sent. Please check your inbox and spam folder.')
+    } catch (_error) {
+      setResendMessage('Could not send verification email right now. Please try again.')
+    } finally {
+      setResendLoading(false)
     }
   }
 
@@ -61,7 +108,22 @@ export default function LoginPage() {
       {/* Form error */}
       {errors.form && (
         <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-destructive">
-          {errors.form}
+          <p>{errors.form}</p>
+          {shouldShowResendVerification && (
+            <div className="mt-2 space-y-1">
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+                className="text-xs font-medium underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {resendLoading ? 'Sending...' : 'Resend verification email'}
+              </button>
+              {resendMessage && (
+                <p className="text-xs text-destructive/90">{resendMessage}</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 

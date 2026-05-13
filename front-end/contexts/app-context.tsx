@@ -72,8 +72,20 @@ interface AppStore {
   mobileNavOpen: boolean
 
   // Auth actions
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>
-  signup: (data: Partial<User> & { password: string }) => Promise<{ success: boolean; error?: string }>
+  login: (email: string, password: string) => Promise<{
+    success: boolean
+    error?: string
+    code?: string
+    canResendVerification?: boolean
+    user?: User
+  }>
+  signup: (data: Partial<User> & { password: string }) => Promise<{
+    success: boolean
+    error?: string
+    code?: string
+    verificationEmailSent?: boolean
+    canResendVerification?: boolean
+  }>
   completeEmailVerification: (data: { token: string; user: EmailVerificationUser }) => void
   validateStoredSession: () => Promise<void>
   logout: () => void
@@ -256,7 +268,12 @@ export const useAppStore = create<AppStore>()(
 
           if (!res.ok) {
             set({ isAuthLoading: false })
-            return { success: false, error: data.message || 'Login failed' }
+            return {
+              success: false,
+              error: data.message || 'Login failed',
+              code: typeof data.code === 'string' ? data.code : undefined,
+              canResendVerification: Boolean(data.can_resend_verification || data.canResendVerification),
+            }
           }
 
           const mappedUser = mapAuthUser(data.user, email)
@@ -320,6 +337,10 @@ export const useAppStore = create<AppStore>()(
             return {
               success: false,
               error: responseData.message || 'Signup failed',
+              code: typeof responseData.code === 'string' ? responseData.code : undefined,
+              canResendVerification: Boolean(
+                responseData.can_resend_verification || responseData.canResendVerification
+              ),
             }
           }
 
@@ -388,7 +409,10 @@ export const useAppStore = create<AppStore>()(
             }
           })
 
-          return { success: true }
+          return {
+            success: true,
+            verificationEmailSent: responseData.verification_email_sent !== false,
+          }
         } catch (error) {
           console.error('SIGNUP ERROR:', error)
           set({ isAuthLoading: false })

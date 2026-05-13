@@ -33,6 +33,9 @@ const getGoogleCallbackUrl = () =>
   process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/auth/google/callback";
 const getAdminEmail = () => (process.env.ADMIN_EMAIL || "admin@swap-save.com").toLowerCase();
 const EGYPT_COUNTRY = "Egypt";
+const EMAIL_NOT_VERIFIED_CODE = "EMAIL_NOT_VERIFIED";
+const RESEND_VERIFICATION_MESSAGE =
+  "If an account exists and still needs verification, a verification email has been sent.";
 const isStrongPassword = (password) =>
   typeof password === "string" &&
   password.length >= 8 &&
@@ -142,7 +145,7 @@ const setVerificationTokenAndSendEmail = async (user) => {
 
   const verificationUrl = `${getFrontendUrl()}/verify-email?token=${verificationToken}`;
 
-  await sendVerificationEmail({
+  return sendVerificationEmail({
     to: user.email,
     name: user.first_name,
     verificationUrl,
@@ -184,6 +187,14 @@ exports.register = asyncHandler(async (req, res) => {
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
+    if (existingUser.isEmailVerified !== true) {
+      return res.status(409).json({
+        message: "This account already exists but still needs email verification.",
+        code: EMAIL_NOT_VERIFIED_CODE,
+        can_resend_verification: true,
+      });
+    }
+
     return res.status(409).json({ message: "Email already exists" });
   }
 
@@ -213,10 +224,24 @@ exports.register = asyncHandler(async (req, res) => {
   });
 
   user = await grantSignupBonus(user._id, { source: "email_signup" });
-  await setVerificationTokenAndSendEmail(user);
+  let verificationEmailSent = true;
+
+  try {
+    const emailResult = await setVerificationTokenAndSendEmail(user);
+    verificationEmailSent = emailResult?.sent !== false;
+  } catch (error) {
+    verificationEmailSent = false;
+    console.warn(
+      `[auth] Verification email failed after registration for user ${user._id}: ${error.message}`
+    );
+  }
 
   return res.status(201).json({
-    message: "Registered successfully. Please verify your email.",
+    message: verificationEmailSent
+      ? "Registered successfully. Please verify your email."
+      : "Registered successfully, but we could not send the verification email right now.",
+    verification_email_sent: verificationEmailSent,
+    email_verification_required: true,
     user: {
       ...toPublicUser(user),
     },
@@ -235,20 +260,33 @@ exports.resendVerificationEmail = asyncHandler(async (req, res) => {
 
   if (!user) {
     return res.status(200).json({
-      message: "If an account exists and still needs verification, a verification email has been sent.",
+      message: RESEND_VERIFICATION_MESSAGE,
+      verification_email_sent: true,
     });
   }
 
   if (user.isEmailVerified) {
     return res.status(200).json({
-      message: "If an account exists and still needs verification, a verification email has been sent.",
+      message: RESEND_VERIFICATION_MESSAGE,
+      verification_email_sent: true,
     });
   }
 
-  await setVerificationTokenAndSendEmail(user);
+  let verificationEmailSent = true;
+
+  try {
+    const emailResult = await setVerificationTokenAndSendEmail(user);
+    verificationEmailSent = emailResult?.sent !== false;
+  } catch (error) {
+    verificationEmailSent = false;
+    console.warn(
+      `[auth] Verification email resend failed for user ${user._id}: ${error.message}`
+    );
+  }
 
   return res.status(200).json({
-    message: "If an account exists and still needs verification, a verification email has been sent.",
+    message: RESEND_VERIFICATION_MESSAGE,
+    verification_email_sent: verificationEmailSent,
   });
 });
 
@@ -382,7 +420,11 @@ exports.login = asyncHandler(async (req, res) => {
   }
 
   if (user.role !== "admin" && user.isEmailVerified !== true) {
-    return res.status(403).json({ message: "Please verify your email before logging in." });
+    return res.status(403).json({
+      message: "Please verify your email before logging in.",
+      code: EMAIL_NOT_VERIFIED_CODE,
+      can_resend_verification: true,
+    });
   }
 
   const token = createToken(user._id);

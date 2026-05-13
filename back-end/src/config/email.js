@@ -10,6 +10,7 @@ const requiredSmtpEnv = [
 ];
 
 const getEnv = (key) => process.env[key]?.trim();
+const DEFAULT_SMTP_TIMEOUT_MS = 15000;
 
 const getMissingSmtpConfig = () => {
   return requiredSmtpEnv.filter((key) => !getEnv(key));
@@ -19,13 +20,28 @@ const hasSmtpConfig = () => {
   return getMissingSmtpConfig().length === 0;
 };
 
+const getSmtpTimeoutMs = () => {
+  const configured = Number(getEnv("SMTP_TIMEOUT_MS") || getEnv("SMTP_CONNECTION_TIMEOUT_MS"));
+
+  if (Number.isFinite(configured) && configured > 0) {
+    return configured;
+  }
+
+  return DEFAULT_SMTP_TIMEOUT_MS;
+};
+
 const createTransporter = () => {
   if (!hasSmtpConfig()) return null;
+
+  const timeoutMs = getSmtpTimeoutMs();
 
   return nodemailer.createTransport({
     host: getEnv("SMTP_HOST"),
     port: Number(getEnv("SMTP_PORT")),
     secure: getEnv("SMTP_SECURE") === "true",
+    connectionTimeout: timeoutMs,
+    greetingTimeout: timeoutMs,
+    socketTimeout: timeoutMs,
     auth: {
       user: getEnv("SMTP_USER"),
       pass: getEnv("SMTP_PASS"),
@@ -58,7 +74,7 @@ const sendVerificationEmail = async ({ to, name, verificationUrl }) => {
         verificationUrl
       );
     }
-    return;
+    return { sent: false, skipped: true };
   }
 
   await transporter.verify();
@@ -75,6 +91,8 @@ const sendVerificationEmail = async ({ to, name, verificationUrl }) => {
       <p>This link expires in 24 hours.</p>
     `,
   });
+
+  return { sent: true, skipped: false };
 };
 
 const sendPasswordResetEmail = async ({ to, name, resetUrl }) => {
@@ -92,7 +110,7 @@ const sendPasswordResetEmail = async ({ to, name, resetUrl }) => {
         resetUrl
       );
     }
-    return;
+    return { sent: false, skipped: true };
   }
 
   await transporter.verify();
@@ -109,6 +127,8 @@ const sendPasswordResetEmail = async ({ to, name, resetUrl }) => {
       <p>This link expires in 1 hour. If you did not request this, you can ignore this email.</p>
     `,
   });
+
+  return { sent: true, skipped: false };
 };
 
 const sendSupportReplyEmail = async ({ to, name, ticketSubject, reply }) => {
