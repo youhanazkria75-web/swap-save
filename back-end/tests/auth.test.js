@@ -55,12 +55,17 @@ describe("Auth API", () => {
       "SMTP_USER",
       "SMTP_PASS",
       "SMTP_FROM",
+      "SMTP_TIMEOUT_MS",
+      "SMTP_CONNECTION_TIMEOUT_MS",
     ];
     const originalEnv = Object.fromEntries(smtpEnvKeys.map((key) => [key, process.env[key]]));
+    const timeoutError = new Error("Connection timeout");
+    timeoutError.code = "ETIMEDOUT";
     const createTransportSpy = jest.spyOn(nodemailer, "createTransport").mockReturnValue({
-      verify: jest.fn().mockRejectedValue(new Error("SMTP unavailable")),
+      verify: jest.fn().mockRejectedValue(timeoutError),
       sendMail: jest.fn(),
     });
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
 
     process.env.SMTP_HOST = "smtp.gmail.com";
     process.env.SMTP_PORT = "465";
@@ -68,6 +73,8 @@ describe("Auth API", () => {
     process.env.SMTP_USER = "mailer@example.com";
     process.env.SMTP_PASS = "app-password";
     process.env.SMTP_FROM = "Swap & Save <mailer@example.com>";
+    delete process.env.SMTP_TIMEOUT_MS;
+    delete process.env.SMTP_CONNECTION_TIMEOUT_MS;
 
     try {
       const res = await request(app)
@@ -85,6 +92,16 @@ describe("Auth API", () => {
       expect(res.statusCode).toBe(201);
       expect(res.body.verification_email_sent).toBe(false);
       expect(res.body.message).toBe("Registered successfully, but we could not send the verification email right now.");
+      expect(createTransportSpy).toHaveBeenCalledWith(expect.objectContaining({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        family: 4,
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 15000,
+      }));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("email connection timeout"));
 
       const user = await User.findOne({ email: "email-failure@test.com" })
         .select("+emailVerificationToken +emailVerificationExpires");
@@ -95,6 +112,7 @@ describe("Auth API", () => {
       expect(user.emailVerificationExpires).toBeInstanceOf(Date);
     } finally {
       createTransportSpy.mockRestore();
+      warnSpy.mockRestore();
       for (const key of smtpEnvKeys) {
         if (originalEnv[key] === undefined) {
           delete process.env[key];

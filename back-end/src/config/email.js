@@ -39,6 +39,7 @@ const createTransporter = () => {
     host: getEnv("SMTP_HOST"),
     port: Number(getEnv("SMTP_PORT")),
     secure: getEnv("SMTP_SECURE") === "true",
+    family: 4,
     connectionTimeout: timeoutMs,
     greetingTimeout: timeoutMs,
     socketTimeout: timeoutMs,
@@ -47,6 +48,59 @@ const createTransporter = () => {
       pass: getEnv("SMTP_PASS"),
     },
   });
+};
+
+const classifyEmailFailure = (error) => {
+  const code = String(error?.code || "").toUpperCase();
+  const message = String(error?.message || "").toLowerCase();
+
+  if (
+    code === "ETIMEDOUT" ||
+    message.includes("connection timeout") ||
+    message.includes("greeting timeout") ||
+    message.includes("socket timeout") ||
+    message.includes("timed out")
+  ) {
+    return "connection timeout";
+  }
+
+  if (
+    ["ENETUNREACH", "EHOSTUNREACH", "ECONNREFUSED", "ECONNRESET", "EAI_AGAIN", "ENOTFOUND"].includes(code) ||
+    message.includes("network is unreachable") ||
+    message.includes("connection refused") ||
+    message.includes("getaddrinfo")
+  ) {
+    return "connection failure";
+  }
+
+  if (
+    code === "EAUTH" ||
+    message.includes("authentication") ||
+    message.includes("invalid login") ||
+    message.includes("invalid credentials")
+  ) {
+    return "authentication failure";
+  }
+
+  return "send failure";
+};
+
+const createSafeEmailError = (error) => {
+  const failure = classifyEmailFailure(error);
+  const safeError = new Error(`email ${failure}`);
+
+  safeError.code = "EMAIL_SEND_FAILED";
+  safeError.emailFailure = failure;
+
+  return safeError;
+};
+
+const runEmailSend = async (operation) => {
+  try {
+    return await operation();
+  } catch (error) {
+    throw createSafeEmailError(error);
+  }
 };
 
 const escapeHtml = (value) =>
@@ -70,26 +124,27 @@ const sendVerificationEmail = async ({ to, name, verificationUrl }) => {
       );
     } else {
       console.warn(
-        `[email] SMTP is not configured. Missing: ${getMissingSmtpConfig().join(", ")}. No email was sent. Verification link:`,
-        verificationUrl
+        `[email] SMTP is not configured. Missing: ${getMissingSmtpConfig().join(", ")}. No verification email was sent.`
       );
     }
     return { sent: false, skipped: true };
   }
 
-  await transporter.verify();
+  await runEmailSend(async () => {
+    await transporter.verify();
 
-  await transporter.sendMail({
-    from,
-    to,
-    subject: "Verify your Swap & Save email",
-    text: `Hi ${name},\n\nVerify your email by opening this link:\n${verificationUrl}\n\nThis link expires in 24 hours.`,
-    html: `
-      <p>Hi ${name},</p>
-      <p>Verify your email by opening this link:</p>
-      <p><a href="${verificationUrl}">Verify email</a></p>
-      <p>This link expires in 24 hours.</p>
-    `,
+    await transporter.sendMail({
+      from,
+      to,
+      subject: "Verify your Swap & Save email",
+      text: `Hi ${name},\n\nVerify your email by opening this link:\n${verificationUrl}\n\nThis link expires in 24 hours.`,
+      html: `
+        <p>Hi ${name},</p>
+        <p>Verify your email by opening this link:</p>
+        <p><a href="${verificationUrl}">Verify email</a></p>
+        <p>This link expires in 24 hours.</p>
+      `,
+    });
   });
 
   return { sent: true, skipped: false };
@@ -106,26 +161,27 @@ const sendPasswordResetEmail = async ({ to, name, resetUrl }) => {
       );
     } else {
       console.warn(
-        `[email] SMTP is not configured. Missing: ${getMissingSmtpConfig().join(", ")}. No email was sent. Password reset link:`,
-        resetUrl
+        `[email] SMTP is not configured. Missing: ${getMissingSmtpConfig().join(", ")}. No password reset email was sent.`
       );
     }
     return { sent: false, skipped: true };
   }
 
-  await transporter.verify();
+  await runEmailSend(async () => {
+    await transporter.verify();
 
-  await transporter.sendMail({
-    from,
-    to,
-    subject: "Reset your Swap & Save password",
-    text: `Hi ${name},\n\nReset your password by opening this link:\n${resetUrl}\n\nThis link expires in 1 hour. If you did not request this, you can ignore this email.`,
-    html: `
-      <p>Hi ${name},</p>
-      <p>Reset your password by opening this link:</p>
-      <p><a href="${resetUrl}">Reset password</a></p>
-      <p>This link expires in 1 hour. If you did not request this, you can ignore this email.</p>
-    `,
+    await transporter.sendMail({
+      from,
+      to,
+      subject: "Reset your Swap & Save password",
+      text: `Hi ${name},\n\nReset your password by opening this link:\n${resetUrl}\n\nThis link expires in 1 hour. If you did not request this, you can ignore this email.`,
+      html: `
+        <p>Hi ${name},</p>
+        <p>Reset your password by opening this link:</p>
+        <p><a href="${resetUrl}">Reset password</a></p>
+        <p>This link expires in 1 hour. If you did not request this, you can ignore this email.</p>
+      `,
+    });
   });
 
   return { sent: true, skipped: false };
@@ -148,19 +204,21 @@ const sendSupportReplyEmail = async ({ to, name, ticketSubject, reply }) => {
   const plainReply = formatPlainText(reply);
   const plainSubject = formatPlainText(ticketSubject);
 
-  await transporter.verify();
+  await runEmailSend(async () => {
+    await transporter.verify();
 
-  await transporter.sendMail({
-    from,
-    to,
-    subject: "Update on your Swap & Save support request",
-    text: `Hi ${safeName},\n\nWe have an update on your support request${plainSubject ? `: ${plainSubject}` : ""}.\n\n${plainReply}\n\nSwap & Save Support`,
-    html: `
-      <p>Hi ${escapeHtml(safeName)},</p>
-      <p>We have an update on your support request${plainSubject ? `: <strong>${escapeHtml(plainSubject)}</strong>` : ""}.</p>
-      <p>${escapeHtml(plainReply).replace(/\n/g, "<br>")}</p>
-      <p>Swap &amp; Save Support</p>
-    `,
+    await transporter.sendMail({
+      from,
+      to,
+      subject: "Update on your Swap & Save support request",
+      text: `Hi ${safeName},\n\nWe have an update on your support request${plainSubject ? `: ${plainSubject}` : ""}.\n\n${plainReply}\n\nSwap & Save Support`,
+      html: `
+        <p>Hi ${escapeHtml(safeName)},</p>
+        <p>We have an update on your support request${plainSubject ? `: <strong>${escapeHtml(plainSubject)}</strong>` : ""}.</p>
+        <p>${escapeHtml(plainReply).replace(/\n/g, "<br>")}</p>
+        <p>Swap &amp; Save Support</p>
+      `,
+    });
   });
 
   return { sent: true, skipped: false };
