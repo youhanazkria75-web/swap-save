@@ -1,9 +1,18 @@
 process.env.JWT_SECRET = "test_jwt_secret";
 
+jest.mock("cloudinary", () => ({
+  v2: {
+    uploader: {
+      upload: jest.fn(),
+    },
+  },
+}));
+
 const request = require("supertest");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { MongoMemoryServer } = require("mongodb-memory-server");
+const { v2: cloudinary } = require("cloudinary");
 
 const app = require("../src/app");
 const Notification = require("../src/models/Notification");
@@ -21,6 +30,7 @@ let ownerId;
 let createdProductId;
 let raterId;
 let adminId;
+let originalCloudinaryUrl;
 
 const tinyJpeg = Buffer.from([
   0xff, 0xd8, 0xff, 0xe0,
@@ -76,6 +86,9 @@ const createLinkedSwapForProduct = async (product, status) => {
 };
 
 beforeAll(async () => {
+  originalCloudinaryUrl = process.env.CLOUDINARY_URL;
+  delete process.env.CLOUDINARY_URL;
+
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
   await mongoose.connect(uri);
@@ -111,7 +124,18 @@ beforeAll(async () => {
   reporterToken = jwt.sign({ userId: rater._id }, process.env.JWT_SECRET);
 });
 
+beforeEach(() => {
+  delete process.env.CLOUDINARY_URL;
+  cloudinary.uploader.upload.mockReset();
+});
+
 afterAll(async () => {
+  if (originalCloudinaryUrl === undefined) {
+    delete process.env.CLOUDINARY_URL;
+  } else {
+    process.env.CLOUDINARY_URL = originalCloudinaryUrl;
+  }
+
   await mongoose.disconnect();
   await mongoServer.stop();
 });
@@ -127,6 +151,73 @@ describe("Products API", () => {
     expect(Array.isArray(res.body.images)).toBe(true);
     expect(res.body.images.length).toBe(1);
     expect(res.body.images[0]).toContain("/uploads/products/");
+  });
+
+  test("Upload product images stores Cloudinary secure URLs when configured", async () => {
+    const cloudinaryUrl = "https://res.cloudinary.com/swap-save/image/upload/v1/products/photo.jpg";
+    process.env.CLOUDINARY_URL = "cloudinary://api-key:api-secret@swap-save";
+    cloudinary.uploader.upload.mockResolvedValueOnce({
+      secure_url: cloudinaryUrl,
+      public_id: "swap-save/products/photo",
+    });
+
+    const uploadRes = await request(app)
+      .post("/products/upload")
+      .set("Authorization", `Bearer ${token}`)
+      .attach("images", tinyJpeg, "cloudinary-photo.jpg");
+
+    expect(uploadRes.statusCode).toBe(200);
+    expect(uploadRes.body.images).toEqual([cloudinaryUrl]);
+    expect(cloudinary.uploader.upload).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        folder: "swap-save/products",
+        resource_type: "image",
+        secure: true,
+      })
+    );
+
+    const createRes = await request(app)
+      .post("/products")
+      .set("Authorization", `Bearer ${token}`)
+      .send(validProductPayload({
+        title: "Cloudinary Camera",
+        description: "Camera listing with a Cloudinary-hosted image.",
+        images: uploadRes.body.images,
+      }));
+
+    expect(createRes.statusCode).toBe(201);
+
+    const storedProduct = await Product.findById(createRes.body.product._id);
+    expect(storedProduct.images).toEqual([cloudinaryUrl]);
+  });
+
+  test("Avatar upload stores Cloudinary secure URL when configured", async () => {
+    const cloudinaryUrl = "https://res.cloudinary.com/swap-save/image/upload/v1/avatars/avatar.jpg";
+    process.env.CLOUDINARY_URL = "cloudinary://api-key:api-secret@swap-save";
+    cloudinary.uploader.upload.mockResolvedValueOnce({
+      secure_url: cloudinaryUrl,
+      public_id: "swap-save/avatars/avatar",
+    });
+
+    const res = await request(app)
+      .post("/users/me/avatar")
+      .set("Authorization", `Bearer ${token}`)
+      .attach("avatar", tinyJpeg, "avatar.jpg");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.user.avatar).toBe(cloudinaryUrl);
+    expect(cloudinary.uploader.upload).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        folder: "swap-save/avatars",
+        resource_type: "image",
+        secure: true,
+      })
+    );
+
+    const user = await User.findById(ownerId);
+    expect(user.avatar).toBe(cloudinaryUrl);
   });
 
   test("Reject spoofed product image uploads", async () => {

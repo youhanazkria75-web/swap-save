@@ -34,6 +34,10 @@ const {
 } = require("../utils/phoneVerification");
 const { buildAvatarUrl } = require("../utils/uploadUrls");
 const { avatarUploadRoot } = require("../middlewares/upload.middleware");
+const {
+  isCloudinaryConfigured,
+  uploadImageFiles,
+} = require("../services/cloudinary.service");
 
 const ACTIVE_SWAP_STATUSES = [
   "pending",
@@ -477,7 +481,9 @@ exports.uploadAvatar = asyncHandler(async (req, res) => {
   }
 
   const previousAvatar = user.avatar;
-  user.avatar = buildAvatarUrl(req, req.file.filename);
+  user.avatar = isCloudinaryConfigured()
+    ? (await uploadImageFiles([req.file], "swap-save/avatars"))[0].secure_url
+    : buildAvatarUrl(req, req.file.filename);
   await user.save();
 
   removeLocalAvatar(previousAvatar);

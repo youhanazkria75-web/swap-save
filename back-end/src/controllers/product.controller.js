@@ -12,6 +12,10 @@ const {
 } = require("../utils/wallet");
 const { createNotification, notifyAdmins } = require("../utils/notifications");
 const { buildFileUrl } = require("../utils/uploadUrls");
+const {
+  isCloudinaryConfigured,
+  uploadImageFiles,
+} = require("../services/cloudinary.service");
 const { calculateTrustScore } = require("../utils/trustMetrics");
 const mongoose = require("mongoose");
 
@@ -356,7 +360,9 @@ exports.uploadProductImages = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "At least one image is required" });
   }
 
-  const images = files.map((file) => buildFileUrl(req, file.filename));
+  const images = isCloudinaryConfigured()
+    ? (await uploadImageFiles(files, "swap-save/products")).map((upload) => upload.secure_url)
+    : files.map((file) => buildFileUrl(req, file.filename));
 
   return res.status(200).json({
     message: "Images uploaded successfully",
