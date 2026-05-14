@@ -17,6 +17,7 @@ import { Input, Textarea } from '@/components/ui/form-elements'
 import { Avatar, AvatarFallback, AvatarImage, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/primitives'
 import { AdminFilterDropdown } from '@/components/admin/admin-filter-dropdown'
 import { cn } from '@/lib/utils'
+import { useSmartPolling } from '@/hooks/use-smart-polling'
 import {
   ADMIN_TRANSACTION_DIRECTIONS,
   ADMIN_TRANSACTION_STATUSES,
@@ -113,8 +114,10 @@ export default function TransactionsPage() {
     setAdjustOpen(true)
   }, [])
 
-  const loadTransactions = useCallback(async () => {
-    setLoading(true)
+  const loadTransactions = useCallback(async (showLoading = true) => {
+    if (showLoading) {
+      setLoading(true)
+    }
 
     try {
       const data = await fetchAdminTransactions({
@@ -126,15 +129,25 @@ export default function TransactionsPage() {
       setTotal(data.total)
       setTotalPages(Math.max(1, data.totalPages || 1))
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to load transactions.')
+      if (showLoading) {
+        toast.error(error instanceof Error ? error.message : 'Failed to load transactions.')
+      }
     } finally {
-      setLoading(false)
+      if (showLoading) {
+        setLoading(false)
+      }
     }
   }, [filters, page])
 
   useEffect(() => {
-    loadTransactions()
+    loadTransactions(true)
   }, [loadTransactions])
+
+  useSmartPolling({
+    intervalMs: 25000,
+    poll: () => loadTransactions(false),
+    runOnVisible: true,
+  })
 
   useEffect(() => {
     if (!adjustOpen || !adjustment.userSearch.trim()) {

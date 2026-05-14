@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -35,6 +35,7 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { API_BASE_URL } from '@/lib/api-config'
 import { cn } from '@/lib/utils'
+import { useSmartPolling } from '@/hooks/use-smart-polling'
 import egyptLocationsDataset from '@/lib/egypt_locations_english_dropdown_dataset.json'
 import type {
   CompensationStatus,
@@ -791,6 +792,29 @@ const mapMessage = (item: BackendRecord): SwapMessage => {
   }
 }
 
+const getMessageKey = (message: SwapMessage) =>
+  message.id || `${message.senderId}-${message.createdAt}-${message.content}`
+
+const sortMessagesByCreatedAt = (items: SwapMessage[]) =>
+  [...items].sort((a, b) => {
+    const left = new Date(a.createdAt).getTime()
+    const right = new Date(b.createdAt).getTime()
+    return (Number.isFinite(left) ? left : 0) - (Number.isFinite(right) ? right : 0)
+  })
+
+const mergeMessagesById = (current: SwapMessage[], incoming: SwapMessage[]) => {
+  const byId = new Map<string, SwapMessage>()
+
+  current.forEach((message) => {
+    byId.set(getMessageKey(message), message)
+  })
+  incoming.forEach((message) => {
+    byId.set(getMessageKey(message), message)
+  })
+
+  return sortMessagesByCreatedAt(Array.from(byId.values()))
+}
+
 const getTimelineTone = (event: SwapTimelineEvent) => {
   if (['rejected', 'admin_rejected', 'cancelled', 'dispute_opened'].includes(event.event)) {
     return 'danger'
@@ -915,82 +939,155 @@ export default function SwapDetailPage() {
     })
   }
 
-  useEffect(() => {
-    let cancelled = false
+  const applyMappedSwap = useCallback((mapped: NonNullable<ReturnType<typeof mapSwap>>) => {
+    setSwap(mapped.swap)
+    setRequester(mapped.requester)
+    setReceiver(mapped.receiver)
+    setOfferedProduct(mapped.offeredProduct)
+    setRequestedProduct(mapped.requestedProduct)
+  }, [])
 
-    const loadSwap = async () => {
+  const loadSwapDetail = useCallback(async ({
+    refreshUserWallet = false,
+    showLoading = false,
+    showToast = false,
+  } = {}) => {
+    if (showLoading) {
+      setLoading(true)
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/swaps/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        },
+      })
+
+      let data: unknown = null
       try {
-        setLoading(true)
-        const response = await fetch(`${API_BASE_URL}/swaps/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-          },
-        })
+        data = await response.json()
+      } catch {
+        data = null
+      }
 
-        let data: unknown = null
-        try {
-          data = await response.json()
-        } catch {
-          data = null
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem('token')
+          router.push('/login')
+          return
         }
 
-        if (!response.ok) {
-          if (response.status === 401 || response.status === 403) {
-            localStorage.removeItem('token')
-            router.push('/login')
-            return
-          }
-
-          throw new Error(
-            typeof data === 'object' &&
-            data !== null &&
-            'message' in data &&
-            typeof data.message === 'string'
-              ? data.message
-              : 'Failed to load swap.'
-          )
-        }
-
-        const swapData =
+        throw new Error(
           typeof data === 'object' &&
           data !== null &&
-          'swap' in data &&
-          typeof data.swap === 'object' &&
-          data.swap !== null
-            ? data.swap as BackendRecord
-            : null
+          'message' in data &&
+          typeof data.message === 'string'
+            ? data.message
+            : 'Failed to load swap.'
+        )
+      }
 
-        const mapped = swapData ? mapSwap(swapData) : null
+      const swapData =
+        typeof data === 'object' &&
+        data !== null &&
+        'swap' in data &&
+        typeof data.swap === 'object' &&
+        data.swap !== null
+          ? data.swap as BackendRecord
+          : null
 
-        if (!cancelled) {
-          setSwap(mapped?.swap ?? null)
-          setRequester(mapped?.requester ?? null)
-          setReceiver(mapped?.receiver ?? null)
-          setOfferedProduct(mapped?.offeredProduct ?? null)
-          setRequestedProduct(mapped?.requestedProduct ?? null)
-        }
+      const mapped = swapData ? mapSwap(swapData) : null
 
-        if (!cancelled) {
-          refreshWallet().catch(() => {})
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setSwap(null)
-          toast.error(error instanceof Error ? error.message : 'Failed to load swap.')
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
+      if (mapped) {
+        applyMappedSwap(mapped)
+      } else if (showLoading) {
+        setSwap(null)
+      }
+
+      if (refreshUserWallet) {
+        refreshWallet().catch(() => {})
+      }
+    } catch (error) {
+      if (showToast) {
+        setSwap(null)
+        toast.error(error instanceof Error ? error.message : 'Failed to load swap.')
+      }
+    } finally {
+      if (showLoading) {
+        setLoading(false)
       }
     }
+  }, [applyMappedSwap, id, refreshWallet, router])
 
-    loadSwap()
-
-    return () => {
-      cancelled = true
+  const loadMessages = useCallback(async ({
+    replace = false,
+    showLoading = false,
+    showToast = false,
+  } = {}) => {
+    if (showLoading) {
+      setMessagesLoading(true)
     }
-  }, [id, refreshWallet, router])
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/swaps/${id}/messages`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+        },
+      })
+
+      let data: unknown = null
+      try {
+        data = await response.json()
+      } catch {
+        data = null
+      }
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem('token')
+          router.push('/login')
+          return
+        }
+
+        throw new Error(
+          typeof data === 'object' &&
+          data !== null &&
+          'message' in data &&
+          typeof data.message === 'string'
+            ? data.message
+            : 'Failed to load messages.'
+        )
+      }
+
+      const items =
+        typeof data === 'object' &&
+        data !== null &&
+        'messages' in data &&
+        Array.isArray(data.messages)
+          ? data.messages
+          : []
+      const nextMessages = items.map((item) => mapMessage(item as BackendRecord))
+
+      setMessages((current) => mergeMessagesById(replace ? [] : current, nextMessages))
+    } catch (error) {
+      if (showToast) {
+        setMessages([])
+        toast.error(error instanceof Error ? error.message : 'Failed to load messages.')
+      }
+    } finally {
+      if (showLoading) {
+        setMessagesLoading(false)
+      }
+    }
+  }, [id, router])
+
+  useEffect(() => {
+    loadSwapDetail({
+      refreshUserWallet: true,
+      showLoading: true,
+      showToast: true,
+    })
+  }, [loadSwapDetail])
 
   useEffect(() => {
     let cancelled = false
@@ -1135,70 +1232,26 @@ export default function SwapDetailPage() {
   }, [id, router])
 
   useEffect(() => {
-    let cancelled = false
+    loadMessages({
+      replace: true,
+      showLoading: true,
+      showToast: true,
+    })
+  }, [loadMessages])
 
-    const loadMessages = async () => {
-      try {
-        setMessagesLoading(true)
-        const response = await fetch(`${API_BASE_URL}/swaps/${id}/messages`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-          },
-        })
+  useSmartPolling({
+    enabled: Boolean(swap),
+    intervalMs: 8000,
+    poll: () => loadSwapDetail(),
+    runOnVisible: true,
+  })
 
-        let data: unknown = null
-        try {
-          data = await response.json()
-        } catch {
-          data = null
-        }
-
-        if (!response.ok) {
-          if (response.status === 401 || response.status === 403) {
-            localStorage.removeItem('token')
-            router.push('/login')
-            return
-          }
-
-          throw new Error(
-            typeof data === 'object' &&
-            data !== null &&
-            'message' in data &&
-            typeof data.message === 'string'
-              ? data.message
-              : 'Failed to load messages.'
-          )
-        }
-
-        const items =
-          typeof data === 'object' &&
-          data !== null &&
-          'messages' in data &&
-          Array.isArray(data.messages)
-            ? data.messages
-            : []
-
-        if (!cancelled) {
-          setMessages(items.map((item) => mapMessage(item as BackendRecord)))
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setMessages([])
-          toast.error(error instanceof Error ? error.message : 'Failed to load messages.')
-        }
-      } finally {
-        if (!cancelled) {
-          setMessagesLoading(false)
-        }
-      }
-    }
-
-    loadMessages()
-
-    return () => {
-      cancelled = true
-    }
-  }, [id, router])
+  useSmartPolling({
+    enabled: Boolean(swap && CHAT_ALLOWED_SWAP_STATUSES.includes(swap.status)),
+    intervalMs: 3000,
+    poll: () => loadMessages(),
+    runOnVisible: true,
+  })
 
   const handleSwapAction = async (action: 'accept' | 'reject') => {
     if (!swap) return
@@ -2257,9 +2310,10 @@ export default function SwapDetailPage() {
           : null
 
       if (messageData) {
-        setMessages((current) => [...current, mapMessage(messageData)])
+        setMessages((current) => mergeMessagesById(current, [mapMessage(messageData)]))
       }
       setMessageText('')
+      loadMessages().catch(() => {})
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to send message.')
     } finally {

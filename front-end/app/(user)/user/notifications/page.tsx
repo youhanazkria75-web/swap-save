@@ -11,6 +11,7 @@ import {
   NOTIFICATION_COUNT_EVENT,
   NOTIFICATION_REFRESH_EVENT,
 } from '@/lib/notifications-api'
+import { useSmartPolling } from '@/hooks/use-smart-polling'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { useApp } from '@/contexts/app-context'
@@ -50,6 +51,17 @@ const getSafeNotificationTarget = (notification: Notification) => {
   return '/user/notifications'
 }
 
+const dedupeNotificationsById = (items: Notification[]) => {
+  const seen = new Set<string>()
+
+  return items.filter((notification) => {
+    const key = notification.id || `${notification.type}-${notification.createdAt}-${notification.title}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 export default function NotificationsPage() {
   const router = useRouter()
   const { refreshWallet } = useApp()
@@ -66,19 +78,30 @@ export default function NotificationsPage() {
     }
 
     try {
-      refreshWallet().catch(() => {})
+      if (showLoading) {
+        refreshWallet().catch(() => {})
+      }
       const { notifications: items, unreadCount: nextUnreadCount } = await fetchNotificationsWithCount()
-      setNotifications(items)
+      setNotifications(dedupeNotificationsById(items))
       setUnreadCount(nextUnreadCount)
     } catch {
-      setNotifications([])
-      setUnreadCount(0)
+      if (showLoading) {
+        setNotifications([])
+        setUnreadCount(0)
+      }
     } finally {
       if (showLoading) {
         setLoading(false)
       }
     }
   }, [refreshWallet])
+
+  useSmartPolling({
+    intervalMs: 15000,
+    poll: () => loadNotifications(false),
+    runOnFocus: true,
+    runOnVisible: true,
+  })
 
   useEffect(() => {
     let cancelled = false

@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { AlertCircle, CheckCircle2, Coins, Loader2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useApp } from '@/contexts/app-context'
 import { API_BASE_URL as API_URL } from '@/lib/api-config'
+import { useSmartPolling } from '@/hooks/use-smart-polling'
 
 type PaymentPurpose = 'coin_package' | 'service_fee'
 type PageStatus = 'confirming' | 'confirmed' | 'pending' | 'failed'
@@ -23,7 +24,7 @@ type WalletSummary = {
 
 type ConfirmReturnResponse = {
   success?: boolean
-  status?: 'pending' | 'completed' | 'failed' | 'expired'
+  status?: 'unpaid' | 'pending' | 'completed' | 'failed' | 'expired'
   message?: string
   reason?: string
   purpose?: PaymentPurpose
@@ -55,125 +56,118 @@ export default function CoinPaymentSuccessPage() {
   const [detail, setDetail] = useState<string | null>(null)
   const [checkingStatus, setCheckingStatus] = useState(false)
 
+  const applyWallet = useCallback((wallet: WalletSummary) => {
+    setCoins(wallet.coins)
+
+    if (user?.id) {
+      updateUser(user.id, {
+        coinBalance: wallet.coins,
+        heldCoins: wallet.held_coins,
+        totalCoinsEarned: wallet.total_coins_earned,
+        totalCoinsSpent: wallet.total_coins_spent,
+        monthlyFreeSwapsUsed: wallet.monthly_free_swaps_used,
+        extraSwapSlots: wallet.extra_swap_slots,
+        priorityMatchesAvailable: wallet.priority_matches_available,
+      })
+    }
+  }, [updateUser, user?.id])
+
+  const refetchWallet = useCallback(async () => {
+    const token = localStorage.getItem('token') || ''
+    const response = await fetch(`${API_URL}/users/me/wallet`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    const data = await response.json().catch(() => null) as { wallet?: WalletSummary } | null
+    const wallet = data?.wallet
+
+    if (response.ok && wallet) {
+      applyWallet(wallet)
+    }
+  }, [applyWallet])
+
+  const applyConfirmation = useCallback(async (data: ConfirmReturnResponse | null, responseOk: boolean) => {
+    const nextPurpose: PaymentPurpose = data?.purpose === 'service_fee' ? 'service_fee' : 'coin_package'
+    const completed = data?.success === true || (responseOk && data?.status === 'completed')
+    const failed =
+      data?.status === 'failed' ||
+      data?.status === 'expired' ||
+      data?.status === 'unpaid' ||
+      (!responseOk && data?.success !== true)
+
+    if (nextPurpose === 'service_fee') {
+      const nextSwapId = data?.swapId || data?.swap?.id || data?.swap?._id || null
+
+      setPurpose('service_fee')
+      setSwapId(nextSwapId)
+      setCoins(null)
+      setStatus(completed ? 'confirmed' : failed ? 'failed' : 'pending')
+      setMessage(
+        completed
+          ? 'Your service fee was confirmed successfully.'
+          : failed
+            ? data?.reason || data?.message || 'The service fee payment could not be verified.'
+            : SERVICE_FEE_PENDING_MESSAGE
+      )
+      setDetail(completed || failed ? null : data?.reason || PENDING_CONFIRMATION_MESSAGE)
+
+      return
+    }
+
+    if (data?.wallet) {
+      applyWallet(data.wallet)
+    } else if (responseOk) {
+      await refetchWallet()
+    }
+
+    const alreadyCompleted = data?.message === 'Paymob webhook already processed'
+
+    setPurpose('coin_package')
+    setSwapId(null)
+    setStatus(completed ? 'confirmed' : failed ? 'failed' : 'pending')
+    setMessage(
+      completed
+        ? alreadyCompleted
+          ? 'Payment already confirmed'
+          : 'Payment confirmed'
+        : failed
+          ? data?.reason || data?.message || 'The payment could not be verified.'
+          : data?.reason || PENDING_CONFIRMATION_MESSAGE
+    )
+    setDetail(null)
+  }, [applyWallet, refetchWallet])
+
+  const confirmReturn = useCallback(async () => {
+    const token = localStorage.getItem('token') || ''
+    const query: Record<string, string> = {}
+    new URLSearchParams(queryString).forEach((value, key) => {
+      query[key] = value
+    })
+
+    if (!token || Object.keys(query).length === 0) {
+      throw new Error('Missing payment confirmation data.')
+    }
+
+    const response = await fetch(`${API_URL}/payments/paymob/confirm-return`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    })
+    const data = await response.json().catch(() => null) as ConfirmReturnResponse | null
+
+    if (!response.ok && !data?.purpose) {
+      throw new Error(data?.reason || data?.message || PENDING_CONFIRMATION_MESSAGE)
+    }
+
+    await applyConfirmation(data, response.ok)
+  }, [applyConfirmation, queryString])
+
   useEffect(() => {
-    let cancelled = false
-
-    const applyWallet = (wallet: WalletSummary) => {
-      setCoins(wallet.coins)
-
-      if (user?.id) {
-        updateUser(user.id, {
-          coinBalance: wallet.coins,
-          heldCoins: wallet.held_coins,
-          totalCoinsEarned: wallet.total_coins_earned,
-          totalCoinsSpent: wallet.total_coins_spent,
-          monthlyFreeSwapsUsed: wallet.monthly_free_swaps_used,
-          extraSwapSlots: wallet.extra_swap_slots,
-          priorityMatchesAvailable: wallet.priority_matches_available,
-        })
-      }
-    }
-
-    const refetchWallet = async () => {
-      const token = localStorage.getItem('token') || ''
-      const response = await fetch(`${API_URL}/users/me/wallet`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const data = await response.json().catch(() => null) as { wallet?: WalletSummary } | null
-      const wallet = data?.wallet
-
-      if (!cancelled && response.ok && wallet) {
-        applyWallet(wallet)
-      }
-    }
-
-    const applyConfirmation = async (data: ConfirmReturnResponse | null, responseOk: boolean) => {
-      const nextPurpose: PaymentPurpose = data?.purpose === 'service_fee' ? 'service_fee' : 'coin_package'
-      const completed = data?.success === true || (responseOk && data?.status === 'completed')
-      const failed =
-        data?.status === 'failed' ||
-        data?.status === 'expired' ||
-        (!responseOk && data?.success !== true)
-
-      if (nextPurpose === 'service_fee') {
-        const nextSwapId = data?.swapId || data?.swap?.id || data?.swap?._id || null
-
-        if (!cancelled) {
-          setPurpose('service_fee')
-          setSwapId(nextSwapId)
-          setCoins(null)
-          setStatus(completed ? 'confirmed' : failed ? 'failed' : 'pending')
-          setMessage(
-            completed
-              ? 'Your service fee was confirmed successfully.'
-              : failed
-                ? data?.reason || data?.message || 'The service fee payment could not be verified.'
-                : SERVICE_FEE_PENDING_MESSAGE
-          )
-          setDetail(completed || failed ? null : data?.reason || PENDING_CONFIRMATION_MESSAGE)
-        }
-
-        return
-      }
-
-      if (data?.wallet) {
-        applyWallet(data.wallet)
-      } else if (responseOk) {
-        await refetchWallet()
-      }
-
-      if (!cancelled) {
-        const alreadyCompleted = data?.message === 'Paymob webhook already processed'
-
-        setPurpose('coin_package')
-        setSwapId(null)
-        setStatus(completed ? 'confirmed' : failed ? 'failed' : 'pending')
-        setMessage(
-          completed
-            ? alreadyCompleted
-              ? 'Payment already confirmed'
-              : 'Payment confirmed'
-            : failed
-              ? data?.reason || data?.message || 'The payment could not be verified.'
-              : data?.reason || PENDING_CONFIRMATION_MESSAGE
-        )
-        setDetail(null)
-      }
-    }
-
-    const confirmReturn = async () => {
-      const token = localStorage.getItem('token') || ''
-      const query: Record<string, string> = {}
-      new URLSearchParams(queryString).forEach((value, key) => {
-        query[key] = value
-      })
-
-      if (!token || Object.keys(query).length === 0) {
-        throw new Error('Missing payment confirmation data.')
-      }
-
-      const response = await fetch(`${API_URL}/payments/paymob/confirm-return`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query }),
-      })
-      const data = await response.json().catch(() => null) as ConfirmReturnResponse | null
-
-      if (!response.ok && !data?.purpose) {
-        throw new Error(data?.reason || data?.message || PENDING_CONFIRMATION_MESSAGE)
-      }
-
-      await applyConfirmation(data, response.ok)
-    }
-
     confirmReturn().catch(async (error) => {
-      if (cancelled) return
-
       setPurpose('coin_package')
       setStatus('pending')
       setMessage(PENDING_CONFIRMATION_MESSAGE)
@@ -182,20 +176,18 @@ export default function CoinPaymentSuccessPage() {
       try {
         await refetchWallet()
       } catch {
-        if (!cancelled) setCoins(null)
+        setCoins(null)
       }
     })
+  }, [confirmReturn, refetchWallet])
 
-    return () => {
-      cancelled = true
-    }
-  }, [queryString, updateUser, user?.id])
-
-  const handleCheckPaymentStatus = async () => {
+  const checkServiceFeeStatus = useCallback(async (showButtonLoading = false) => {
     if (!swapId) return
 
     try {
-      setCheckingStatus(true)
+      if (showButtonLoading) {
+        setCheckingStatus(true)
+      }
       const token = localStorage.getItem('token') || ''
       const response = await fetch(`${API_URL}/swaps/${swapId}/service-fee/reconcile`, {
         method: 'POST',
@@ -214,7 +206,12 @@ export default function CoinPaymentSuccessPage() {
         return
       }
 
-      if (!response.ok && response.status !== 202) {
+      if (
+        data?.status === 'failed' ||
+        data?.status === 'expired' ||
+        data?.status === 'unpaid' ||
+        (!response.ok && response.status !== 202)
+      ) {
         setStatus('failed')
         setMessage(data?.reason || data?.message || 'The service fee payment could not be verified.')
         setDetail(null)
@@ -225,13 +222,41 @@ export default function CoinPaymentSuccessPage() {
       setMessage(SERVICE_FEE_PENDING_MESSAGE)
       setDetail(data?.reason || PENDING_CONFIRMATION_MESSAGE)
     } catch (error) {
-      setStatus('failed')
-      setMessage(error instanceof Error ? error.message : 'The service fee payment could not be verified.')
-      setDetail(null)
+      if (showButtonLoading) {
+        setStatus('failed')
+        setMessage(error instanceof Error ? error.message : 'The service fee payment could not be verified.')
+        setDetail(null)
+        return
+      }
+
+      throw error
     } finally {
-      setCheckingStatus(false)
+      if (showButtonLoading) {
+        setCheckingStatus(false)
+      }
     }
+  }, [swapId])
+
+  const handleCheckPaymentStatus = () => {
+    checkServiceFeeStatus(true).catch(() => {})
   }
+
+  const pollPendingPayment = useCallback(async () => {
+    if (purpose === 'service_fee' && swapId) {
+      await checkServiceFeeStatus(false)
+      return
+    }
+
+    await confirmReturn()
+  }, [checkServiceFeeStatus, confirmReturn, purpose, swapId])
+
+  useSmartPolling({
+    enabled: status === 'pending',
+    intervalMs: 5000,
+    maxRuns: 6,
+    poll: pollPendingPayment,
+    runOnVisible: true,
+  })
 
   const isConfirming = status === 'confirming'
   const isPending = status === 'pending'

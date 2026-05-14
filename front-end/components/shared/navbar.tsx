@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -22,6 +22,7 @@ import {
   NOTIFICATION_COUNT_EVENT,
   NOTIFICATION_REFRESH_EVENT,
 } from '@/lib/notifications-api'
+import { useSmartPolling } from '@/hooks/use-smart-polling'
 
 const NAV_LINKS = [
   { href: '/marketplace', label: 'Marketplace' },
@@ -73,45 +74,51 @@ export function Navbar() {
     return () => window.removeEventListener('account-profile-updated', handleProfileUpdated)
   }, [user])
 
-  useEffect(() => {
-    let cancelled = false
-
-    const loadUnread = async () => {
-      if (!isAuthenticated || !userId) {
-        setUnread(0)
-        return
-      }
-
-      try {
-        const count = await fetchUnreadCount()
-        if (!cancelled) {
-          setUnread(count)
-        }
-      } catch {
-        if (!cancelled) setUnread(0)
-      }
+  const loadUnread = useCallback(async (resetOnError = false) => {
+    if (!isAuthenticated || !userId) {
+      setUnread(0)
+      return
     }
 
+    try {
+      const count = await fetchUnreadCount()
+      setUnread(count)
+    } catch {
+      if (resetOnError) {
+        setUnread(0)
+      }
+    }
+  }, [isAuthenticated, userId])
+
+  useEffect(() => {
+    loadUnread(true).catch(() => {})
+  }, [loadUnread, pathname])
+
+  useSmartPolling({
+    enabled: Boolean(isAuthenticated && userId),
+    intervalMs: 15000,
+    poll: () => loadUnread(false),
+    runOnFocus: true,
+    runOnVisible: true,
+  })
+
+  useEffect(() => {
     const handleCountChanged = (event: Event) => {
       const count = Number((event as CustomEvent<{ unreadCount?: number }>).detail?.unreadCount ?? 0)
       setUnread(Number.isFinite(count) ? count : 0)
     }
     const handleRefresh = () => {
-      loadUnread().catch(() => {})
+      loadUnread(false).catch(() => {})
     }
 
-    loadUnread()
-    window.addEventListener('focus', handleRefresh)
     window.addEventListener(NOTIFICATION_COUNT_EVENT, handleCountChanged)
     window.addEventListener(NOTIFICATION_REFRESH_EVENT, handleRefresh)
 
     return () => {
-      cancelled = true
-      window.removeEventListener('focus', handleRefresh)
       window.removeEventListener(NOTIFICATION_COUNT_EVENT, handleCountChanged)
       window.removeEventListener(NOTIFICATION_REFRESH_EVENT, handleRefresh)
     }
-  }, [isAuthenticated, pathname, userId])
+  }, [loadUnread])
 
   const handleLogout = () => {
     logout()
