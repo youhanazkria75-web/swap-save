@@ -148,7 +148,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map(link => (
               <Link
                 key={link.href}
@@ -166,7 +166,7 @@ export function Navbar() {
           </nav>
 
           {/* Search */}
-          <div className="hidden md:flex flex-1 max-w-xs">
+          <div className="hidden lg:flex flex-1 max-w-xs">
             <Link
               href="/marketplace"
               className="flex items-center gap-2 w-full h-9 px-3 rounded-lg border border-input bg-muted/50 text-sm text-muted-foreground hover:border-border hover:bg-muted transition-colors"
@@ -181,7 +181,7 @@ export function Navbar() {
             {isAuthenticated && user ? (
               <>
                 {/* Coin balance */}
-                <Link href="/user/coins" className="hidden sm:flex coin-pill hover:bg-amber-100 transition-colors">
+                <Link href="/user/coins" className="hidden lg:flex coin-pill hover:bg-amber-100 transition-colors">
                   <span>🪙</span>
                   <span>{user.coinBalance.toLocaleString()}</span>
                 </Link>
@@ -206,8 +206,8 @@ export function Navbar() {
                         <AvatarImage src={displayUser?.avatar} alt={displayUser?.firstName} />
                         <AvatarFallback className="text-xs bg-brand-100 text-brand-700">{initials}</AvatarFallback>
                       </Avatar>
-                      <span className="hidden sm:block text-sm font-medium max-w-24 truncate">{displayUser?.firstName}</span>
-                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
+                      <span className="hidden lg:block text-sm font-medium max-w-24 truncate">{displayUser?.firstName}</span>
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden lg:block" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
@@ -269,7 +269,7 @@ export function Navbar() {
                 </DropdownMenu>
 
                 {/* Add product CTA */}
-                <Button asChild size="sm" className="hidden sm:flex">
+                <Button asChild size="sm" className="hidden lg:flex">
                   <Link href="/user/products/new">
                     <Plus className="h-3.5 w-3.5" />
                     Add Product
@@ -291,7 +291,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="lg:hidden"
               onClick={() => setMobileOpen(!mobileOpen)}
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -302,7 +302,7 @@ export function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-background animate-fade-in">
+        <div className="lg:hidden border-t border-border bg-background animate-fade-in">
           <div className="page-container py-4 space-y-1">
             {/* Mobile search */}
             <Link
