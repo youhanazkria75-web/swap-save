@@ -68,6 +68,15 @@ const isHttpUrl = (value) => {
   }
 };
 
+const isLocalhostUrl = (value) => {
+  try {
+    const url = new URL(value);
+    return ["localhost", "127.0.0.1", "::1"].includes(url.hostname.toLowerCase());
+  } catch (_error) {
+    return false;
+  }
+};
+
 const addMissingEnvError = (errors, label, missing) => {
   if (missing.length > 0) {
     errors.push(`${label} missing: ${missing.join(", ")}`);
@@ -115,6 +124,11 @@ const validateProductionEnv = (env = process.env) => {
     const value = getEnvValue(env, key);
     if (value && !isHttpUrl(value)) {
       errors.push(`${key} must be an absolute http(s) URL.`);
+      return;
+    }
+
+    if (value && isLocalhostUrl(value)) {
+      errors.push(`${key} must not use localhost or 127.0.0.1 in production.`);
     }
   });
 

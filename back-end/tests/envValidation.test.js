@@ -2,6 +2,7 @@ const {
   validateProductionEnv,
   validateStartupEnv,
 } = require("../src/config/envValidation");
+const { getPaymobReturnUrls } = require("../src/services/paymob.service");
 
 const buildProductionEnv = (overrides = {}) => ({
   NODE_ENV: "production",
@@ -25,6 +26,13 @@ const buildProductionEnv = (overrides = {}) => ({
   SMTP_FROM: "Swap & Save <no-reply@example.com>",
   ...overrides,
 });
+
+const restoreProcessEnv = (originalEnv) => {
+  Object.keys(process.env).forEach((key) => {
+    delete process.env[key];
+  });
+  Object.assign(process.env, originalEnv);
+};
 
 describe("startup environment validation", () => {
   test("production missing critical env fails validation without secret values", () => {
@@ -102,5 +110,60 @@ describe("startup environment validation", () => {
       "PAYMOB_IFRAME_ID must be a positive integer.",
       "FRONTEND_URL must be an absolute http(s) URL.",
     ]));
+  });
+
+  test("production rejects localhost frontend and Paymob return URLs", () => {
+    const result = validateProductionEnv(buildProductionEnv({
+      CLIENT_URL: "http://localhost:3000",
+      FRONTEND_URL: "https://swap-save-iota.vercel.app",
+      PAYMOB_SUCCESS_URL: "http://127.0.0.1:3000/user/coins/payment/success",
+      PAYMOB_FAILURE_URL: "http://localhost:3000/user/coins/payment/failure",
+      PAYMOB_WEBHOOK_URL: "http://localhost:5000/payments/paymob/webhook",
+    }));
+
+    expect(result.errors).toEqual(expect.arrayContaining([
+      "CLIENT_URL must not use localhost or 127.0.0.1 in production.",
+      "PAYMOB_SUCCESS_URL must not use localhost or 127.0.0.1 in production.",
+      "PAYMOB_FAILURE_URL must not use localhost or 127.0.0.1 in production.",
+      "PAYMOB_WEBHOOK_URL must not use localhost or 127.0.0.1 in production.",
+    ]));
+  });
+
+  test("Paymob return URL helper uses Vercel URLs in production", () => {
+    const originalEnv = { ...process.env };
+
+    process.env.NODE_ENV = "production";
+    process.env.FRONTEND_URL = "https://swap-save-iota.vercel.app";
+    process.env.CLIENT_URL = "https://swap-save-iota.vercel.app";
+    process.env.PAYMOB_SUCCESS_URL = "https://swap-save-iota.vercel.app/user/coins/payment/success";
+    process.env.PAYMOB_FAILURE_URL = "https://swap-save-iota.vercel.app/user/coins/payment/failure";
+
+    try {
+      expect(getPaymobReturnUrls()).toEqual({
+        successUrl: "https://swap-save-iota.vercel.app/user/coins/payment/success",
+        failureUrl: "https://swap-save-iota.vercel.app/user/coins/payment/failure",
+      });
+    } finally {
+      restoreProcessEnv(originalEnv);
+    }
+  });
+
+  test("Paymob return URL helper keeps localhost available outside production", () => {
+    const originalEnv = { ...process.env };
+
+    process.env.NODE_ENV = "development";
+    delete process.env.FRONTEND_URL;
+    delete process.env.CLIENT_URL;
+    delete process.env.PAYMOB_SUCCESS_URL;
+    delete process.env.PAYMOB_FAILURE_URL;
+
+    try {
+      expect(getPaymobReturnUrls()).toEqual({
+        successUrl: "http://localhost:3000/user/coins/payment/success",
+        failureUrl: "http://localhost:3000/user/coins/payment/failure",
+      });
+    } finally {
+      restoreProcessEnv(originalEnv);
+    }
   });
 });

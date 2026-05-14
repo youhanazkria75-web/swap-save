@@ -92,6 +92,10 @@ export default function CoinPaymentSuccessPage() {
     const applyConfirmation = async (data: ConfirmReturnResponse | null, responseOk: boolean) => {
       const nextPurpose: PaymentPurpose = data?.purpose === 'service_fee' ? 'service_fee' : 'coin_package'
       const completed = data?.success === true || (responseOk && data?.status === 'completed')
+      const failed =
+        data?.status === 'failed' ||
+        data?.status === 'expired' ||
+        (!responseOk && data?.success !== true)
 
       if (nextPurpose === 'service_fee') {
         const nextSwapId = data?.swapId || data?.swap?.id || data?.swap?._id || null
@@ -100,9 +104,15 @@ export default function CoinPaymentSuccessPage() {
           setPurpose('service_fee')
           setSwapId(nextSwapId)
           setCoins(null)
-          setStatus(completed ? 'confirmed' : 'pending')
-          setMessage(completed ? 'Your service fee was confirmed successfully.' : SERVICE_FEE_PENDING_MESSAGE)
-          setDetail(completed ? null : data?.reason || PENDING_CONFIRMATION_MESSAGE)
+          setStatus(completed ? 'confirmed' : failed ? 'failed' : 'pending')
+          setMessage(
+            completed
+              ? 'Your service fee was confirmed successfully.'
+              : failed
+                ? data?.reason || data?.message || 'The service fee payment could not be verified.'
+                : SERVICE_FEE_PENDING_MESSAGE
+          )
+          setDetail(completed || failed ? null : data?.reason || PENDING_CONFIRMATION_MESSAGE)
         }
 
         return
@@ -119,13 +129,15 @@ export default function CoinPaymentSuccessPage() {
 
         setPurpose('coin_package')
         setSwapId(null)
-        setStatus(completed ? 'confirmed' : 'pending')
+        setStatus(completed ? 'confirmed' : failed ? 'failed' : 'pending')
         setMessage(
           completed
             ? alreadyCompleted
               ? 'Payment already confirmed'
               : 'Payment confirmed'
-            : data?.reason || PENDING_CONFIRMATION_MESSAGE
+            : failed
+              ? data?.reason || data?.message || 'The payment could not be verified.'
+              : data?.reason || PENDING_CONFIRMATION_MESSAGE
         )
         setDetail(null)
       }

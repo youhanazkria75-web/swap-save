@@ -107,6 +107,18 @@ const getPaymentObject = (payload) => {
     return eventObject.data.payment;
   }
 
+  const transactionList =
+    (Array.isArray(eventObject?.transactions) && eventObject.transactions) ||
+    (Array.isArray(eventObject?.data?.transactions) && eventObject.data.transactions) ||
+    (Array.isArray(eventObject?.results) && eventObject.results) ||
+    (Array.isArray(eventObject?.data?.results) && eventObject.data.results) ||
+    [];
+
+  const latestTransaction = transactionList.find((item) => item && typeof item === "object");
+  if (latestTransaction) {
+    return latestTransaction;
+  }
+
   return eventObject || {};
 };
 
@@ -164,6 +176,8 @@ const getPaymobTxnResponseCode = (eventObject) =>
       "payment.data.message",
     ])
   ).toUpperCase();
+
+const PAYMOB_APPROVED_TXN_RESPONSE_CODES = new Set(["APPROVED", "00"]);
 
 const buildPaymobMetadataSet = (metadata, set = {}) => {
   if (metadata.paymobTransactionId) {
@@ -335,33 +349,18 @@ const getExpectedPaymobAmountCents = (transaction, coinPackage) => {
   return Math.round(toNumber(coinPackage.priceEGP) * 100);
 };
 
-const isSuccessfulPaymobPayment = (eventObject, metadata) =>
-  metadata.paymobSuccess === true &&
-  metadata.paymobPending !== true &&
-  metadata.paymobErrorOccurred !== true &&
-  !toBoolean(eventObject.is_voided) &&
-  !toBoolean(eventObject.is_refunded);
-
 const isPaymobPaymentVoidedOrRefunded = (eventObject) =>
   toBoolean(eventObject.is_voided) || toBoolean(eventObject.is_refunded);
 
-const getIncompletePaymobPaymentReason = (eventObject, metadata) => {
-  if (isPaymobPaymentVoidedOrRefunded(eventObject)) {
-    return "payment refunded or voided";
-  }
+const hasApprovedTxnResponseCode = (metadata) =>
+  !metadata.paymobTxnResponseCode ||
+  PAYMOB_APPROVED_TXN_RESPONSE_CODES.has(metadata.paymobTxnResponseCode);
 
-  if (metadata.paymobPending === true) {
-    return "payment still pending";
-  }
+const hasDeclinedTxnResponseCode = (metadata) =>
+  Boolean(metadata.paymobTxnResponseCode) &&
+  !PAYMOB_APPROVED_TXN_RESPONSE_CODES.has(metadata.paymobTxnResponseCode);
 
-  if (metadata.paymobErrorOccurred === true) {
-    return "payment error occurred";
-  }
-
-  return "payment not completed";
-};
-
-const getServiceFeePaymobApprovalResult = (eventObject, metadata) => {
+const getPaymobApprovalResult = (eventObject, metadata) => {
   if (isPaymobPaymentVoidedOrRefunded(eventObject)) {
     return { approved: false, finalFailure: true, reason: "payment refunded or voided" };
   }
@@ -370,7 +369,7 @@ const getServiceFeePaymobApprovalResult = (eventObject, metadata) => {
     return { approved: false, finalFailure: false, reason: "payment still pending" };
   }
 
-  if (metadata.paymobTxnResponseCode && metadata.paymobTxnResponseCode !== "APPROVED") {
+  if (hasDeclinedTxnResponseCode(metadata)) {
     return { approved: false, finalFailure: true, reason: "payment not approved" };
   }
 
@@ -379,11 +378,11 @@ const getServiceFeePaymobApprovalResult = (eventObject, metadata) => {
   }
 
   if (metadata.paymobSuccess !== true) {
-    return { approved: false, finalFailure: false, reason: "payment not completed" };
+    return { approved: false, finalFailure: true, reason: "payment not completed" };
   }
 
-  if (!metadata.paymobTxnResponseCode) {
-    return { approved: false, finalFailure: false, reason: "payment approval code missing" };
+  if (!hasApprovedTxnResponseCode(metadata)) {
+    return { approved: false, finalFailure: true, reason: "payment not approved" };
   }
 
   return { approved: true, finalFailure: false };
@@ -1079,10 +1078,10 @@ const processPaymobServiceFeePayment = async ({
     currency: metadata.paymobCurrency,
   });
 
-  const approval = getServiceFeePaymobApprovalResult(eventObject, metadata);
+  const approval = getPaymobApprovalResult(eventObject, metadata);
 
   if (!approval.approved) {
-    const reason = approval.reason || getIncompletePaymobPaymentReason(eventObject, metadata);
+    const reason = approval.reason || "payment not completed";
 
     if (keepPendingOnIncomplete) {
       if (approval.finalFailure) {
@@ -1271,23 +1270,31 @@ const processPaymobPackagePayment = async ({
     currency: metadata.paymobCurrency,
   });
 
-  if (!isSuccessfulPaymobPayment(eventObject, metadata)) {
-    const failedTransaction = await markTransactionFailed(transaction, metadata, "payment not completed");
+  const approval = getPaymobApprovalResult(eventObject, metadata);
+
+  if (!approval.approved) {
+    const reason = approval.reason || "payment not completed";
+    const failedTransaction = await markTransactionFailed(transaction, metadata, reason);
 
     logPaymob("warn", "webhook rejected", {
       source,
-      reason: "payment not completed",
+      reason,
       transactionId: transaction._id,
       success: metadata.paymobSuccess,
       pending: metadata.paymobPending,
       errorOccurred: metadata.paymobErrorOccurred,
+      txnResponseCode: metadata.paymobTxnResponseCode,
     });
 
     return {
       statusCode: incompletePaymentStatusCode,
-      message: failedTransaction ? "Paymob payment marked failed" : "Paymob payment already processed",
+      message: failedTransaction
+        ? reason === "payment not approved"
+          ? "Paymob payment was not approved"
+          : "Paymob payment marked failed"
+        : "Paymob payment already processed",
       transaction: failedTransaction || transaction,
-      reason: "payment not completed",
+      reason,
     };
   }
 
@@ -1338,28 +1345,6 @@ const normalizeReturnQuery = (query) => {
 
 const getExpectedIntegrationId = (transaction) =>
   toNumber(transaction.metadata?.paymobIntegrationId || process.env.PAYMOB_INTEGRATION_ID);
-
-const rejectPaymobReturn = async ({ res, statusCode = 400, message, transaction, metadata, reason }) => {
-  let updatedTransaction = transaction;
-
-  if (transaction && metadata && ["payment not approved", "payment not completed"].includes(reason)) {
-    updatedTransaction = await markTransactionFailed(transaction, metadata, reason);
-  }
-  const responseTransaction = updatedTransaction || transaction;
-  const wallet =
-    responseTransaction && getPaymentPurpose(responseTransaction) === "coin_package"
-      ? await getWalletSummary(responseTransaction.user)
-      : undefined;
-
-  return sendPaymobReturnResponse(res, statusCode, {
-    message,
-    reason,
-    status: responseTransaction?.status || "failed",
-    success: false,
-    transaction: responseTransaction,
-    wallet,
-  });
-};
 
 const storePendingServiceFeeReconcileMetadata = async (transaction, metadata, reason) =>
   Transaction.findByIdAndUpdate(
@@ -1763,6 +1748,7 @@ exports.createServiceFeeCheckout = asyncHandler(async (req, res) => {
     description: `Pending ${side} service fee via Paymob`,
     metadata: {
       purpose: "service_fee",
+      payment_type: "service_fee",
       provider: "paymob",
       serviceFeeSide: side,
       serviceFeeEGP: feeEGP,
@@ -1780,6 +1766,7 @@ exports.createServiceFeeCheckout = asyncHandler(async (req, res) => {
       transactionId: transaction._id,
       merchantOrderId,
       payment: {
+        type: "service_fee",
         amountEGP: feeEGP,
         name: "Swap service fee",
         description: `${side} service fee for swap ${swap._id}`,
@@ -1790,6 +1777,8 @@ exports.createServiceFeeCheckout = asyncHandler(async (req, res) => {
       transaction._id,
       {
         $set: {
+          "metadata.transaction_id": String(transaction._id),
+          "metadata.transactionId": String(transaction._id),
           "metadata.merchantOrderId": merchantOrderId,
           "metadata.merchant_order_id": merchantOrderId,
           "metadata.paymobOrderId": checkout.orderId,
@@ -2077,10 +2066,12 @@ exports.createCoinPackageCheckout = asyncHandler(async (req, res) => {
     description: `Pending purchase of ${coinPackage.coins} coins via Paymob`,
     metadata: {
       purpose: "coin_package",
+      payment_type: "coin_purchase",
       packageId: coinPackage.id,
       priceEGP: coinPackage.priceEGP,
       provider: "paymob",
       paymobCurrency: getPaymobCurrency(),
+      payer_user_id: String(user._id),
     },
   });
 
@@ -2098,8 +2089,13 @@ exports.createCoinPackageCheckout = asyncHandler(async (req, res) => {
       transaction._id,
       {
         $set: {
+          "metadata.transaction_id": String(transaction._id),
+          "metadata.transactionId": String(transaction._id),
+          "metadata.payer_user_id": String(user._id),
           "metadata.merchantOrderId": merchantOrderId,
+          "metadata.merchant_order_id": merchantOrderId,
           "metadata.paymobOrderId": checkout.orderId,
+          "metadata.paymob_order_id": checkout.orderId,
           "metadata.paymobIntegrationId": checkout.integrationId,
           "metadata.paymobAmountCents": checkout.amountCents,
           "metadata.paymobCurrency": checkout.currency,
@@ -2421,25 +2417,6 @@ exports.confirmPaymobReturn = asyncHandler(async (req, res) => {
       status: transaction.status || "pending",
       success: false,
       transaction,
-    });
-  }
-
-  if (returnMetadata.paymobTxnResponseCode !== "APPROVED") {
-    logPaymob("warn", "return confirmation rejected", {
-      requestId: req.requestId,
-      reason: "payment not approved",
-      transactionId: transaction._id,
-      purpose: getPaymentPurpose(transaction),
-      txnResponseCode: returnMetadata.paymobTxnResponseCode,
-    });
-
-    return rejectPaymobReturn({
-      res,
-      statusCode: 400,
-      message: "Paymob payment was not approved",
-      transaction,
-      metadata: returnMetadata,
-      reason: "payment not approved",
     });
   }
 

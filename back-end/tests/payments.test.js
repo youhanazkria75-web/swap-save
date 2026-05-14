@@ -337,7 +337,14 @@ describe("Paymob coin package payments", () => {
     expect(transaction.metadata.packageId).toBe("coins_100");
     expect(transaction.metadata.priceEGP).toBe(50);
     expect(transaction.metadata.provider).toBe("paymob");
+    expect(transaction.metadata.payment_type).toBe("coin_purchase");
+    expect(transaction.metadata.transaction_id).toBe(String(transaction._id));
+    expect(transaction.metadata.transactionId).toBe(String(transaction._id));
+    expect(transaction.metadata.payer_user_id).toBe(String(user._id));
+    expect(transaction.metadata.merchantOrderId).toBe(`coinpkg_${transaction._id}`);
+    expect(transaction.metadata.merchant_order_id).toBe(`coinpkg_${transaction._id}`);
     expect(transaction.metadata.paymobOrderId).toBe("777001");
+    expect(transaction.metadata.paymob_order_id).toBe("777001");
     expect(transaction.metadata.paymobPaymentUrl).toContain("payment_token=checkout-token");
     expect(transaction.metadata.paymobIframeUrl).toContain("payment_token=checkout-token");
 
@@ -364,6 +371,7 @@ describe("Paymob coin package payments", () => {
     expect(paymentKeyBody.amount_cents).toBe(5000);
     expect(paymentKeyBody.currency).toBe("EGP");
     expect(paymentKeyBody.integration_id).toBe(123456);
+    expect(paymentKeyBody.redirection_url).toBe(process.env.PAYMOB_SUCCESS_URL);
   });
 
   test("checkout rejects unknown packages before calling Paymob", async () => {
@@ -554,6 +562,9 @@ describe("Paymob coin package payments", () => {
     expect(transaction.currency).toBe(SERVICE_FEE_CURRENCY);
     expect(transaction.amount).toBe(SERVICE_FEE_EGP);
     expect(transaction.metadata.purpose).toBe("service_fee");
+    expect(transaction.metadata.payment_type).toBe("service_fee");
+    expect(transaction.metadata.transaction_id).toBe(String(transaction._id));
+    expect(transaction.metadata.transactionId).toBe(String(transaction._id));
     expect(transaction.metadata.serviceFeeSide).toBe("requester");
     expect(transaction.metadata.paymobOrderId).toBe("881500");
     expect(transaction.metadata.paymob_order_id).toBe("881500");
@@ -565,6 +576,7 @@ describe("Paymob coin package payments", () => {
     const paymentKeyBody = JSON.parse(global.fetch.mock.calls[2][1].body);
     expect(paymentKeyBody.amount_cents).toBe(SERVICE_FEE_EGP * 100);
     expect(paymentKeyBody.currency).toBe(SERVICE_FEE_CURRENCY);
+    expect(paymentKeyBody.redirection_url).toBe(process.env.PAYMOB_SUCCESS_URL);
   });
 
   test("service fee webhook marks only the paying participant and advances after both confirmed fees", async () => {
@@ -645,6 +657,44 @@ describe("Paymob coin package payments", () => {
     const timeline = await SwapTimelineEvent.find({ swap: swap._id });
     expect(timeline.some((event) => event.event === "service_fee_paid")).toBe(true);
     expect(timeline.some((event) => event.event === "service_fees_completed")).toBe(true);
+  });
+
+  test("service fee approval accepts Paymob success when txn response code is omitted", async () => {
+    const { user: requester } = await createUserAndToken({ coins: 12 });
+    const { user: receiver } = await createUserAndToken({ coins: 14 });
+    const swap = await createApprovedSwap({ requester, receiver });
+    const transaction = await createPendingPaymobServiceFeeTransaction({
+      user: requester,
+      swap,
+      side: "requester",
+      orderId: "881528",
+      merchantOrderId: "svcfee_success_without_txn_code",
+    });
+    const payload = createPaymobPayload({
+      orderId: "881528",
+      transactionId: 771528,
+      amountCents: SERVICE_FEE_EGP * 100,
+      merchantOrderId: "svcfee_success_without_txn_code",
+      txnResponseCode: null,
+    });
+    const hmac = createPaymobHmac(payload);
+
+    const res = await request(app)
+      .post(`/payments/paymob/webhook?hmac=${hmac}`)
+      .send(payload);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Paymob payment completed");
+
+    const updatedSwap = await SwapRequest.findById(swap._id);
+    expect(updatedSwap.requester_paid).toBe(true);
+    expect(updatedSwap.receiver_paid).toBe(false);
+    expect(updatedSwap.status).toBe("payment_pending");
+
+    const completedTransaction = await Transaction.findById(transaction._id);
+    expect(completedTransaction.status).toBe("completed");
+    expect(completedTransaction.metadata.paymobTransactionId).toBe("771528");
+    expect(completedTransaction.metadata.paymobTxnResponseCode).toBeUndefined();
   });
 
   test("receiver sees unpaid service fee state after requester paid and receiver has no transaction", async () => {
@@ -1459,7 +1509,7 @@ describe("Paymob coin package payments", () => {
     const failedTransaction = await Transaction.findOne({ user: user._id });
     expect(failedTransaction.status).toBe("failed");
     expect(failedTransaction.type).toBe("package_purchase_pending");
-    expect(failedTransaction.metadata.paymobFailureReason).toBe("payment not completed");
+    expect(failedTransaction.metadata.paymobFailureReason).toBe("payment error occurred");
   });
 
   test("webhook rejects invalid HMAC and does not change wallet state", async () => {
@@ -1555,6 +1605,37 @@ describe("Paymob coin package payments", () => {
     expect(completedTransaction.metadata.paymobCompletedBy).toBe("return");
     expect(completedTransaction.metadata.paymobTransactionId).toBe("700901");
     expect(await Notification.countDocuments({ user: user._id, target_type: "wallet" })).toBe(1);
+  });
+
+  test("coin return confirmation accepts Paymob success when txn response code is omitted", async () => {
+    const { user, token } = await createUserAndToken({ coins: 13 });
+    await createPendingPaymobPackageTransaction({
+      user,
+      orderId: "700011",
+      merchantOrderId: "coinpkg_return_without_txn_code",
+    });
+    const query = createPaymobReturnQuery({
+      orderId: "700011",
+      transactionId: 700911,
+      merchantOrderId: "coinpkg_return_without_txn_code",
+      txnResponseCode: null,
+    });
+
+    const res = await request(app)
+      .post("/payments/paymob/confirm-return")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ query });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Paymob payment completed");
+    expect(res.body.success).toBe(true);
+    expect(res.body.status).toBe("completed");
+    expect(res.body.wallet.coins).toBe(113);
+
+    const completedTransaction = await Transaction.findOne({ user: user._id });
+    expect(completedTransaction.status).toBe("completed");
+    expect(completedTransaction.metadata.paymobTransactionId).toBe("700911");
+    expect(completedTransaction.metadata.paymobTxnResponseCode).toBeUndefined();
   });
 
   test("duplicate return confirmation does not double-credit coins", async () => {

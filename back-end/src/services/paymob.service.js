@@ -1,16 +1,19 @@
 const crypto = require("crypto");
+const logger = require("../config/logger");
 
 const PAYMOB_BASE_URL = process.env.PAYMOB_BASE_URL || "https://accept.paymob.com/api";
 const PAYMOB_IFRAME_BASE_URL =
   process.env.PAYMOB_IFRAME_BASE_URL || "https://accept.paymob.com/api/acceptance/iframes";
+const DEFAULT_LOCAL_FRONTEND_URL = "http://localhost:3000";
+const PAYMOB_SUCCESS_PATH = "/user/coins/payment/success";
+const PAYMOB_FAILURE_PATH = "/user/coins/payment/failure";
+const LOCAL_RETURN_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
 const CHECKOUT_ENV_KEYS = [
   "PAYMOB_API_KEY",
   "PAYMOB_INTEGRATION_ID",
   "PAYMOB_IFRAME_ID",
   "PAYMOB_WEBHOOK_URL",
-  "PAYMOB_SUCCESS_URL",
-  "PAYMOB_FAILURE_URL",
 ];
 
 const HMAC_ENV_KEYS = ["PAYMOB_HMAC_SECRET"];
@@ -43,10 +46,75 @@ const getMissingEnv = (keys) => keys.filter((key) => !process.env[key]);
 
 const getPaymobCurrency = () => (process.env.PAYMOB_CURRENCY || "EGP").trim().toUpperCase();
 
+const getEnvString = (key) =>
+  typeof process.env[key] === "string" ? process.env[key].trim() : "";
+
+const isProduction = () => process.env.NODE_ENV === "production";
+
 const throwConfigurationError = (message) => {
   const error = new Error(message);
   error.statusCode = 503;
   throw error;
+};
+
+const parseHttpUrl = (value, key) => {
+  if (!value) {
+    throwConfigurationError(`Paymob checkout is not configured. ${key} is required`);
+  }
+
+  let url;
+  try {
+    url = new URL(value);
+  } catch (_error) {
+    throwConfigurationError(`Paymob checkout is not configured. ${key} must be an absolute http(s) URL`);
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throwConfigurationError(`Paymob checkout is not configured. ${key} must be an absolute http(s) URL`);
+  }
+
+  if (isProduction() && LOCAL_RETURN_HOSTS.has(url.hostname.toLowerCase())) {
+    throwConfigurationError(`Paymob checkout is not configured. ${key} must not use localhost in production`);
+  }
+
+  return url;
+};
+
+const normalizeBaseUrl = (url) => {
+  url.pathname = url.pathname.replace(/\/+$/, "");
+  url.search = "";
+  url.hash = "";
+  return url.toString().replace(/\/+$/, "");
+};
+
+const getPublicFrontendUrl = () => {
+  const explicit = getEnvString("FRONTEND_URL") || getEnvString("CLIENT_URL");
+  const value = explicit || (isProduction() ? "" : DEFAULT_LOCAL_FRONTEND_URL);
+  const url = parseHttpUrl(value, explicit ? (getEnvString("FRONTEND_URL") ? "FRONTEND_URL" : "CLIENT_URL") : "FRONTEND_URL");
+
+  return normalizeBaseUrl(url);
+};
+
+const buildFrontendUrl = (path) => {
+  const baseUrl = getPublicFrontendUrl();
+  const url = new URL(path, `${baseUrl}/`);
+  return url.toString();
+};
+
+const getPaymobReturnUrls = (payment = {}) => {
+  const successUrl =
+    getEnvString("PAYMOB_SUCCESS_URL") ||
+    payment.successUrl ||
+    buildFrontendUrl(PAYMOB_SUCCESS_PATH);
+  const failureUrl =
+    getEnvString("PAYMOB_FAILURE_URL") ||
+    payment.failureUrl ||
+    buildFrontendUrl(PAYMOB_FAILURE_PATH);
+
+  return {
+    successUrl: parseHttpUrl(successUrl, "PAYMOB_SUCCESS_URL").toString(),
+    failureUrl: parseHttpUrl(failureUrl, "PAYMOB_FAILURE_URL").toString(),
+  };
 };
 
 const assertPaymobCheckoutConfigured = () => {
@@ -246,6 +314,7 @@ const createPaymobCheckoutSession = async ({
   const amountEGP = Number(payment.amountEGP ?? coinPackage?.priceEGP);
   const amountCents = Math.round(amountEGP * 100);
   const integrationId = Number(process.env.PAYMOB_INTEGRATION_ID);
+  const returnUrls = getPaymobReturnUrls(payment);
   const itemName = payment.name || coinPackage?.name || "Swap & Save payment";
   const itemDescription =
     payment.description ||
@@ -306,7 +375,7 @@ const createPaymobCheckoutSession = async ({
     currency,
     integration_id: integrationId,
     notification_url: process.env.PAYMOB_WEBHOOK_URL,
-    redirection_url: payment.successUrl || process.env.PAYMOB_SUCCESS_URL,
+    redirection_url: returnUrls.successUrl,
   });
   const paymentToken = paymentKeyResponse.token;
 
@@ -317,6 +386,17 @@ const createPaymobCheckoutSession = async ({
   }
 
   const iframeUrl = `${PAYMOB_IFRAME_BASE_URL}/${process.env.PAYMOB_IFRAME_ID}?payment_token=${encodeURIComponent(paymentToken)}`;
+
+  logger.info(
+    `[paymob] return URLs selected ${JSON.stringify({
+      paymentType: payment.type || (coinPackage ? "coin_purchase" : "payment"),
+      transactionId: String(transactionId),
+      merchantOrderId,
+      orderId: String(orderId),
+      successUrl: returnUrls.successUrl,
+      failureUrl: returnUrls.failureUrl,
+    })}`
+  );
 
   return {
     provider: "paymob",
@@ -329,8 +409,8 @@ const createPaymobCheckoutSession = async ({
     paymentToken,
     paymentUrl: iframeUrl,
     iframeUrl,
-    successUrl: payment.successUrl || process.env.PAYMOB_SUCCESS_URL,
-    failureUrl: payment.failureUrl || process.env.PAYMOB_FAILURE_URL,
+    successUrl: returnUrls.successUrl,
+    failureUrl: returnUrls.failureUrl,
   };
 };
 
@@ -373,8 +453,10 @@ module.exports = {
   createPaymobCheckoutSession,
   createPaymobHmac,
   fetchPaymobPaymentStatus,
+  getPaymobReturnUrls,
   getPaymobCurrency,
   getPaymobEventObject,
+  getPublicFrontendUrl,
   inquirePaymobTransaction,
   retrievePaymobTransaction,
   verifyPaymobHmac,
