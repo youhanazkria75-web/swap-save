@@ -247,7 +247,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         {/* Main content */}
         <main className="flex-1 overflow-auto">
           {/* Mobile top bar */}
-          <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-background sticky top-16 z-30">
+          <div className="lg:hidden flex items-center gap-3 px-4 py-2 border-b border-border bg-background sticky top-0 z-30">
             <button
               onClick={() => setMobileNavOpen(true)}
               className="p-1.5 rounded-lg hover:bg-muted transition-colors"
@@ -269,7 +269,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
 
-          <div className="p-4 sm:p-6">
+          <div className="px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4 lg:p-6">
             {children}
           </div>
         </main>

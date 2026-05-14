@@ -592,7 +592,7 @@ export default function UserDashboard() {
     .slice(0, 4)
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-5 sm:space-y-6 lg:space-y-8">
       {/* Welcome header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -627,7 +627,7 @@ export default function UserDashboard() {
       )}
 
       {/* Stats cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <StatsCard
           title="Active products"
           value={activeProducts.length}
@@ -659,7 +659,7 @@ export default function UserDashboard() {
       </div>
 
       {/* Main grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-5 lg:gap-6">
         {/* Recent swaps */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
@@ -715,7 +715,7 @@ export default function UserDashboard() {
         </div>
 
         {/* Right column */}
-        <div className="space-y-5">
+        <div className="space-y-4 lg:space-y-5">
           {/* Trust & profile card */}
           <div className="bg-card rounded-xl border border-border p-5">
             <h3 className="font-semibold mb-4">Trust & profile</h3>
@@ -826,7 +826,7 @@ export default function UserDashboard() {
               <Link href="/user/products">Manage all <ChevronRight className="h-4 w-4" /></Link>
             </Button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
             {myProducts.slice(0, 4).map(product => (
               <ProductCard key={product.id} product={product} currentUserId={user?.id} compact />
             ))}

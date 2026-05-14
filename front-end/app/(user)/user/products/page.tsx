@@ -296,7 +296,7 @@ export default function MyProductsPage() {
   const STATUS_FILTERS = ['all', 'active', 'pending', 'swapped', 'inactive']
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-4 sm:space-y-5 lg:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -309,7 +309,7 @@ export default function MyProductsPage() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
         {[
           { label: 'Active', count: products.filter(p => p.status === 'active').length, color: 'text-green-600 bg-green-50 border-green-200' },
           { label: 'Pending', count: products.filter(p => p.status === 'pending').length, color: 'text-amber-600 bg-amber-50 border-amber-200' },
@@ -373,7 +373,7 @@ export default function MyProductsPage() {
 
       {/* Grid view */}
       {!loading && view === 'grid' && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
           {filtered.map(product => (
             <div key={product.id} className="bg-card rounded-xl border border-border overflow-hidden group">
               {/* Image */}

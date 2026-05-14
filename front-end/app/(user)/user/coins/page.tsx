@@ -334,13 +334,13 @@ export default function CoinsPage() {
   const canToggleHistory = Boolean(visibleWallet && visibleWallet.transactions.length > 3)
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5 lg:space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Coins</h1>
         <p className="text-muted-foreground text-sm mt-0.5">Your in-platform currency for swaps and features</p>
       </div>
 
-      <div className="bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl p-5 lg:p-6 text-white">
         {visibleWallet ? (
           <>
             <div className="flex items-start justify-between gap-4">
@@ -387,11 +387,11 @@ export default function CoinsPage() {
         </div>
       </div>
 
-      <div className="bg-card rounded-2xl border border-border p-5">
+      <div className="bg-card rounded-2xl border border-border p-4 lg:p-5">
         <h2 className="font-semibold mb-4">What you can do with coins</h2>
         <div className="grid sm:grid-cols-3 gap-3">
           {COIN_USES.map(({ icon: Icon, title, cost, desc, action }) => (
-            <div key={title} className="bg-muted/40 rounded-xl p-4">
+            <div key={title} className="bg-muted/40 rounded-xl p-3 lg:p-4">
               <Icon className="h-5 w-5 text-primary mb-2" />
               <p className="font-medium text-sm">{title}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
@@ -413,11 +413,11 @@ export default function CoinsPage() {
         </div>
       </div>
 
-      <div className="bg-card rounded-2xl border border-border p-5">
+      <div className="bg-card rounded-2xl border border-border p-4 lg:p-5">
         <h2 className="font-semibold mb-4">Earn coin rewards</h2>
         <div className="grid sm:grid-cols-3 gap-3">
           {COIN_REWARDS.map(({ title, reward }) => (
-            <div key={title} className="bg-muted/40 rounded-xl p-4">
+            <div key={title} className="bg-muted/40 rounded-xl p-3 lg:p-4">
               <Gift className="h-5 w-5 text-primary mb-2" />
               <p className="font-medium text-sm">{title}</p>
               <p className="text-sm font-bold text-green-600 mt-2">+{reward} coins</p>
@@ -437,12 +437,12 @@ export default function CoinsPage() {
             Coin packages are not available.
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
           {coinPackages.map(pkg => (
             <div
               key={pkg.id}
               className={cn(
-                'relative bg-card rounded-2xl border p-5',
+                'relative bg-card rounded-2xl border p-4 lg:p-5',
                 pkg.isPopular ? 'border-primary ring-2 ring-primary/20' : 'border-border'
               )}
             >
