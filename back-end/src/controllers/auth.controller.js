@@ -7,6 +7,7 @@ const { sendVerificationEmail, sendPasswordResetEmail } = require("../config/ema
 const { grantProfileCompleteRewardIfEligible, grantSignupBonus } = require("../utils/wallet");
 const { resetPhoneVerificationState } = require("../utils/phoneVerification");
 const { BLOCKED_ACCOUNT_MESSAGE, isEmailBlocked } = require("../utils/blockedAccounts");
+const { getFrontendUrl } = require("../utils/frontendUrl");
 const egyptLocationsDataset = require("../config/egypt_locations_english_dropdown_dataset.json");
 
 // helper: create token
@@ -28,7 +29,6 @@ const createPasswordResetToken = () => {
   return { token, tokenHash };
 };
 
-const getFrontendUrl = () => process.env.FRONTEND_URL || "http://localhost:3000";
 const getGoogleCallbackUrl = () =>
   process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/auth/google/callback";
 const getAdminEmail = () => (process.env.ADMIN_EMAIL || "admin@swap-save.com").toLowerCase();

@@ -11,6 +11,7 @@ const app = require("../src/app");
 const User = require("../src/models/User");
 const BlockedAccount = require("../src/models/BlockedAccount");
 const { BLOCKED_ACCOUNT_MESSAGE, hashBlockedEmail } = require("../src/utils/blockedAccounts");
+const { getFrontendUrl } = require("../src/utils/frontendUrl");
 
 let mongoServer;
 
@@ -28,6 +29,31 @@ afterAll(async () => {
 });
 
 describe("Auth API", () => {
+  test("auth frontend URL uses FRONTEND_URL first in production", () => {
+    expect(getFrontendUrl({
+      NODE_ENV: "production",
+      FRONTEND_URL: "https://www.swapandsave.app/",
+      CLIENT_URL: "https://client.swapandsave.app",
+    })).toBe("https://www.swapandsave.app");
+  });
+
+  test("auth frontend URL falls back to CLIENT_URL in production", () => {
+    expect(getFrontendUrl({
+      NODE_ENV: "production",
+      CLIENT_URL: "https://www.swapandsave.app/",
+    })).toBe("https://www.swapandsave.app");
+  });
+
+  test("auth frontend URL does not fall back to localhost in production", () => {
+    expect(() => getFrontendUrl({ NODE_ENV: "production" }))
+      .toThrow("FRONTEND_URL or CLIENT_URL is required in production.");
+  });
+
+  test("auth frontend URL keeps localhost fallback outside production", () => {
+    expect(getFrontendUrl({ NODE_ENV: "development" })).toBe("http://localhost:3000");
+    expect(getFrontendUrl({ NODE_ENV: "test" })).toBe("http://localhost:3000");
+  });
+
   test("Register new user", async () => {
     const res = await request(app)
       .post("/auth/register")

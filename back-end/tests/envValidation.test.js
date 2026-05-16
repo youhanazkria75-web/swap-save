@@ -69,6 +69,16 @@ describe("startup environment validation", () => {
     expect(result.warnings).toEqual([]);
   });
 
+  test("production fails clearly when both frontend origins are missing", () => {
+    const env = buildProductionEnv({
+      FRONTEND_URL: "",
+      CLIENT_URL: "",
+    });
+
+    expect(() => validateStartupEnv({ env, onWarning: jest.fn() }))
+      .toThrow(/Production startup requires FRONTEND_URL or CLIENT_URL/);
+  });
+
   test("development and test do not require production envs", () => {
     expect(validateStartupEnv({ env: { NODE_ENV: "development" }, onWarning: jest.fn() })).toEqual({
       errors: [],
