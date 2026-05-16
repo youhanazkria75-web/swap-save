@@ -80,20 +80,26 @@ describe("startup environment validation", () => {
     });
   });
 
-  test("production warns for partially configured optional integrations", () => {
+  test("production rejects partially configured Google OAuth and still warns for partially configured optional integrations", () => {
     const warnings = [];
-    const result = validateStartupEnv({
+    const result = validateProductionEnv(buildProductionEnv({
+      GOOGLE_CLIENT_ID: "google-client",
+      TWILIO_ACCOUNT_SID: "twilio-account",
+    }));
+
+    expect(result.errors).toEqual(expect.arrayContaining([
+      "Google OAuth production env missing: GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL",
+    ]));
+    expect(result.warnings).toHaveLength(1);
+    expect(result.warnings.join("\n")).toContain("Twilio Verify is partially configured");
+
+    expect(() => validateStartupEnv({
       env: buildProductionEnv({
         GOOGLE_CLIENT_ID: "google-client",
         TWILIO_ACCOUNT_SID: "twilio-account",
       }),
       onWarning: (warning) => warnings.push(warning),
-    });
-
-    expect(result.errors).toEqual([]);
-    expect(result.warnings).toHaveLength(2);
-    expect(warnings.join("\n")).toContain("Google OAuth is partially configured");
-    expect(warnings.join("\n")).toContain("Twilio Verify is partially configured");
+    })).toThrow(/Google OAuth production env missing/);
   });
 
   test("production rejects invalid numeric and URL env values", () => {
@@ -122,11 +128,81 @@ describe("startup environment validation", () => {
     }));
 
     expect(result.errors).toEqual(expect.arrayContaining([
-      "CLIENT_URL must not use localhost or 127.0.0.1 in production.",
-      "PAYMOB_SUCCESS_URL must not use localhost or 127.0.0.1 in production.",
-      "PAYMOB_FAILURE_URL must not use localhost or 127.0.0.1 in production.",
-      "PAYMOB_WEBHOOK_URL must not use localhost or 127.0.0.1 in production.",
+      "CLIENT_URL must not use localhost, 127.0.0.1, or ::1 in production.",
+      "PAYMOB_SUCCESS_URL must not use localhost, 127.0.0.1, or ::1 in production.",
+      "PAYMOB_FAILURE_URL must not use localhost, 127.0.0.1, or ::1 in production.",
+      "PAYMOB_WEBHOOK_URL must not use localhost, 127.0.0.1, or ::1 in production.",
     ]));
+  });
+
+  test("production rejects ngrok frontend and Paymob URLs", () => {
+    const result = validateProductionEnv(buildProductionEnv({
+      CLIENT_URL: "https://client.ngrok-free.app",
+      FRONTEND_URL: "https://frontend.ngrok.io",
+      PAYMOB_SUCCESS_URL: "https://success.ngrok.app/user/coins/payment/success",
+      PAYMOB_FAILURE_URL: "https://failure.ngrok-free.dev/user/coins/payment/failure",
+      PAYMOB_WEBHOOK_URL: "https://api-ngrok.example.com/payments/paymob/webhook",
+    }));
+
+    expect(result.errors).toEqual(expect.arrayContaining([
+      "CLIENT_URL must not use ngrok URLs in production.",
+      "FRONTEND_URL must not use ngrok URLs in production.",
+      "PAYMOB_SUCCESS_URL must not use ngrok URLs in production.",
+      "PAYMOB_FAILURE_URL must not use ngrok URLs in production.",
+      "PAYMOB_WEBHOOK_URL must not use ngrok URLs in production.",
+    ]));
+  });
+
+  test("production validates Google OAuth callback URL when Google OAuth is configured", () => {
+    const localhostResult = validateProductionEnv(buildProductionEnv({
+      GOOGLE_CLIENT_ID: "google-client",
+      GOOGLE_CLIENT_SECRET: "google-secret",
+      GOOGLE_CALLBACK_URL: "http://localhost:5000/auth/google/callback",
+    }));
+    const ngrokResult = validateProductionEnv(buildProductionEnv({
+      GOOGLE_CLIENT_ID: "google-client",
+      GOOGLE_CLIENT_SECRET: "google-secret",
+      GOOGLE_CALLBACK_URL: "https://oauth.ngrok-free.app/auth/google/callback",
+    }));
+    const invalidResult = validateProductionEnv(buildProductionEnv({
+      GOOGLE_CLIENT_ID: "google-client",
+      GOOGLE_CLIENT_SECRET: "google-secret",
+      GOOGLE_CALLBACK_URL: "swap-save-api.onrender.com/auth/google/callback",
+    }));
+    const safeResult = validateProductionEnv(buildProductionEnv({
+      GOOGLE_CLIENT_ID: "google-client",
+      GOOGLE_CLIENT_SECRET: "google-secret",
+      GOOGLE_CALLBACK_URL: "https://swap-save-api.onrender.com/auth/google/callback",
+    }));
+
+    expect(localhostResult.errors).toContain(
+      "GOOGLE_CALLBACK_URL must not use localhost, 127.0.0.1, or ::1 in production."
+    );
+    expect(ngrokResult.errors).toContain("GOOGLE_CALLBACK_URL must not use ngrok URLs in production.");
+    expect(invalidResult.errors).toContain("GOOGLE_CALLBACK_URL must be an absolute http(s) URL.");
+    expect(safeResult.errors).toEqual([]);
+  });
+
+  test("development and test keep localhost and ngrok values available", () => {
+    expect(validateStartupEnv({
+      env: {
+        NODE_ENV: "development",
+        CLIENT_URL: "http://localhost:3000",
+        PAYMOB_SUCCESS_URL: "https://dev.ngrok-free.app/user/coins/payment/success",
+        GOOGLE_CALLBACK_URL: "http://localhost:5000/auth/google/callback",
+      },
+      onWarning: jest.fn(),
+    })).toEqual({ errors: [], warnings: [] });
+
+    expect(validateStartupEnv({
+      env: {
+        NODE_ENV: "test",
+        CLIENT_URL: "http://127.0.0.1:3000",
+        PAYMOB_WEBHOOK_URL: "https://test.ngrok.io/payments/paymob/webhook",
+        GOOGLE_CALLBACK_URL: "https://google.ngrok.app/auth/google/callback",
+      },
+      onWarning: jest.fn(),
+    })).toEqual({ errors: [], warnings: [] });
   });
 
   test("Paymob return URL helper uses Vercel URLs in production", () => {
@@ -143,6 +219,22 @@ describe("startup environment validation", () => {
         successUrl: "https://swap-save-iota.vercel.app/user/coins/payment/success",
         failureUrl: "https://swap-save-iota.vercel.app/user/coins/payment/failure",
       });
+    } finally {
+      restoreProcessEnv(originalEnv);
+    }
+  });
+
+  test("Paymob return URL helper rejects ngrok URLs in production", () => {
+    const originalEnv = { ...process.env };
+
+    process.env.NODE_ENV = "production";
+    process.env.FRONTEND_URL = "https://swap-save-iota.vercel.app";
+    process.env.CLIENT_URL = "https://swap-save-iota.vercel.app";
+    process.env.PAYMOB_SUCCESS_URL = "https://checkout.ngrok-free.app/user/coins/payment/success";
+    process.env.PAYMOB_FAILURE_URL = "https://swap-save-iota.vercel.app/user/coins/payment/failure";
+
+    try {
+      expect(() => getPaymobReturnUrls()).toThrow(/PAYMOB_SUCCESS_URL must not use ngrok URLs in production/);
     } finally {
       restoreProcessEnv(originalEnv);
     }

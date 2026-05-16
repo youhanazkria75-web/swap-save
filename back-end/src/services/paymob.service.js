@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const logger = require("../config/logger");
+const { getUnsafeProductionUrlReason } = require("../utils/urlSafety");
 
 const PAYMOB_BASE_URL = process.env.PAYMOB_BASE_URL || "https://accept.paymob.com/api";
 const PAYMOB_IFRAME_BASE_URL =
@@ -7,7 +8,6 @@ const PAYMOB_IFRAME_BASE_URL =
 const DEFAULT_LOCAL_FRONTEND_URL = "http://localhost:3000";
 const PAYMOB_SUCCESS_PATH = "/user/coins/payment/success";
 const PAYMOB_FAILURE_PATH = "/user/coins/payment/failure";
-const LOCAL_RETURN_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
 const CHECKOUT_ENV_KEYS = [
   "PAYMOB_API_KEY",
@@ -73,8 +73,12 @@ const parseHttpUrl = (value, key) => {
     throwConfigurationError(`Paymob checkout is not configured. ${key} must be an absolute http(s) URL`);
   }
 
-  if (isProduction() && LOCAL_RETURN_HOSTS.has(url.hostname.toLowerCase())) {
-    throwConfigurationError(`Paymob checkout is not configured. ${key} must not use localhost in production`);
+  if (isProduction()) {
+    const reason = getUnsafeProductionUrlReason(url);
+
+    if (reason) {
+      throwConfigurationError(`Paymob checkout is not configured. ${key} ${reason}`);
+    }
   }
 
   return url;

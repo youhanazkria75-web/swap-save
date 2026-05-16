@@ -11,6 +11,7 @@ const hpp = require("hpp");
 const path = require("path");
 const { xss } = require("express-xss-sanitizer");
 const noSqlSanitizer = require("./middlewares/sanitize.middleware");
+const { sanitizeUrlForLogging } = require("./utils/urlSafety");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -62,8 +63,10 @@ const contactLimiter = rateLimit({
 app.use(apiLimiter);
 
 // ================= REQUEST LOGGING =================
+morgan.token("safe-url", (req) => sanitizeUrlForLogging(req.originalUrl || req.url));
+
 app.use(
-  morgan("dev", {
+  morgan(":method :safe-url :status :response-time ms - :res[content-length]", {
     stream: {
       write: (message) => logger.info(message.trim()),
     },

@@ -1,3 +1,5 @@
+const { getUnsafeProductionUrlReason } = require("../utils/urlSafety");
+
 const PRODUCTION_REQUIRED_ENV = [
   "NODE_ENV",
   "MONGO_URI",
@@ -68,12 +70,15 @@ const isHttpUrl = (value) => {
   }
 };
 
-const isLocalhostUrl = (value) => {
+const addProductionUrlSafetyErrors = (errors, key, value) => {
   try {
-    const url = new URL(value);
-    return ["localhost", "127.0.0.1", "::1"].includes(url.hostname.toLowerCase());
+    const reason = getUnsafeProductionUrlReason(value);
+
+    if (reason) {
+      errors.push(`${key} ${reason}`);
+    }
   } catch (_error) {
-    return false;
+    // URL shape is validated separately so callers get one clear URL error.
   }
 };
 
@@ -127,16 +132,22 @@ const validateProductionEnv = (env = process.env) => {
       return;
     }
 
-    if (value && isLocalhostUrl(value)) {
-      errors.push(`${key} must not use localhost or 127.0.0.1 in production.`);
+    if (value) {
+      addProductionUrlSafetyErrors(errors, key, value);
     }
   });
 
-  if (getEnvValue(env, "GOOGLE_CALLBACK_URL") && !isHttpUrl(getEnvValue(env, "GOOGLE_CALLBACK_URL"))) {
-    warnings.push("GOOGLE_CALLBACK_URL should be an absolute http(s) URL.");
+  if (hasAnyEnv(env, GOOGLE_OAUTH_ENV)) {
+    addMissingEnvError(errors, "Google OAuth production env", getMissingEnv(env, GOOGLE_OAUTH_ENV));
+
+    const googleCallbackUrl = getEnvValue(env, "GOOGLE_CALLBACK_URL");
+    if (googleCallbackUrl && !isHttpUrl(googleCallbackUrl)) {
+      errors.push("GOOGLE_CALLBACK_URL must be an absolute http(s) URL.");
+    } else if (googleCallbackUrl) {
+      addProductionUrlSafetyErrors(errors, "GOOGLE_CALLBACK_URL", googleCallbackUrl);
+    }
   }
 
-  addPartialOptionalWarning(warnings, env, "Google OAuth", GOOGLE_OAUTH_ENV);
   addPartialOptionalWarning(warnings, env, "Twilio Verify", TWILIO_VERIFY_ENV);
 
   return { errors, warnings };
