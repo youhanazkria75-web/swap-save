@@ -113,6 +113,12 @@ const escapeHtml = (value) =>
 
 const formatPlainText = (value) => String(value ?? "").replace(/\r\n/g, "\n");
 
+const buildMailOptions = (options) => {
+  const replyTo = getEnv("SMTP_REPLY_TO");
+
+  return replyTo ? { ...options, replyTo } : options;
+};
+
 const sendVerificationEmail = async ({ to, name, verificationUrl }) => {
   const from = getEnv("SMTP_FROM");
   const transporter = createTransporter();
@@ -133,7 +139,7 @@ const sendVerificationEmail = async ({ to, name, verificationUrl }) => {
   await runEmailSend(async () => {
     await transporter.verify();
 
-    await transporter.sendMail({
+    await transporter.sendMail(buildMailOptions({
       from,
       to,
       subject: "Verify your Swap & Save email",
@@ -144,7 +150,7 @@ const sendVerificationEmail = async ({ to, name, verificationUrl }) => {
         <p><a href="${verificationUrl}">Verify email</a></p>
         <p>This link expires in 24 hours.</p>
       `,
-    });
+    }));
   });
 
   return { sent: true, skipped: false };
@@ -170,7 +176,7 @@ const sendPasswordResetEmail = async ({ to, name, resetUrl }) => {
   await runEmailSend(async () => {
     await transporter.verify();
 
-    await transporter.sendMail({
+    await transporter.sendMail(buildMailOptions({
       from,
       to,
       subject: "Reset your Swap & Save password",
@@ -181,7 +187,7 @@ const sendPasswordResetEmail = async ({ to, name, resetUrl }) => {
         <p><a href="${resetUrl}">Reset password</a></p>
         <p>This link expires in 1 hour. If you did not request this, you can ignore this email.</p>
       `,
-    });
+    }));
   });
 
   return { sent: true, skipped: false };
@@ -207,7 +213,7 @@ const sendSupportReplyEmail = async ({ to, name, ticketSubject, reply }) => {
   await runEmailSend(async () => {
     await transporter.verify();
 
-    await transporter.sendMail({
+    await transporter.sendMail(buildMailOptions({
       from,
       to,
       subject: "Update on your Swap & Save support request",
@@ -218,7 +224,7 @@ const sendSupportReplyEmail = async ({ to, name, ticketSubject, reply }) => {
         <p>${escapeHtml(plainReply).replace(/\n/g, "<br>")}</p>
         <p>Swap &amp; Save Support</p>
       `,
-    });
+    }));
   });
 
   return { sent: true, skipped: false };
