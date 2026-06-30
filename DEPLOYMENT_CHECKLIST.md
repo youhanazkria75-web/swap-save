@@ -64,40 +64,10 @@ LOCAL_UPLOADS_PERSISTENCE_ACK=false
 ENABLE_API_DOCS=false
 ```
 
-## D) Optional Integrations
 
-Google OAuth, if enabled:
-
-```env
-GOOGLE_CLIENT_ID=your_google_oauth_client_id
-GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
-GOOGLE_CALLBACK_URL=https://your-backend-domain.com/auth/google/callback
-```
-
-Twilio Verify, if enabled:
-
-```env
-TWILIO_ACCOUNT_SID=your_twilio_account_sid
-TWILIO_AUTH_TOKEN=your_twilio_auth_token
-TWILIO_VERIFY_SERVICE_SID=your_twilio_verify_service_sid
-```
 
 If one value for an optional integration is configured, set the full group for that integration.
 
-## E) Paymob Setup Checklist
-
-- Set Paymob webhook URL to the deployed backend HTTPS URL:
-  - `https://your-backend-domain.com/payments/paymob/webhook`
-- Set success return URL:
-  - `https://your-frontend-domain.com/user/coins/payment/success`
-- Set failure return URL:
-  - `https://your-frontend-domain.com/user/coins/payment/failure`
-- Use Paymob sandbox credentials in staging.
-- Use Paymob production credentials only when ready for real payments.
-- Confirm `PAYMOB_HMAC_SECRET` matches the Paymob dashboard.
-- Test coin package checkout in staging.
-- Test swap service-fee checkout for both participants in staging.
-- Confirm both paid service-fee state advances the swap to `exchange_setup`.
 
 ## F) Upload Storage Checklist
 
