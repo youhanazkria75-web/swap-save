@@ -197,3 +197,153 @@ Backend services include:
 - Analytics APIs
 - Support APIs
 - Reporting APIs
+---
+
+## Project Structure
+
+```text
+swap-save/
+│
+├── front-end/
+│   ├── app/
+│   ├── components/
+│   ├── contexts/
+│   ├── hooks/
+│   ├── lib/
+│   ├── services/
+│   └── middleware.ts
+│
+├── back-end/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── middleware/
+│   │   ├── services/
+│   │   ├── config/
+│   │   └── utils/
+│   │
+│   ├── uploads/
+│   └── tests/
+│
+├── docs/
+│
+└── deployment configuration
+```
+
+---
+
+## Key Engineering Challenges Solved
+
+During development, several engineering challenges were addressed:
+
+- Building a multi-step product exchange lifecycle
+- Synchronizing real-time swap state transitions
+- Implementing secure payment confirmation workflow
+- Managing two-sided service fee payment validation
+- Preventing unauthorized exchange progression
+- Building secure email verification and password reset systems
+- Designing fraud detection and suspicious activity monitoring
+- Handling protected messaging between exchange participants
+- Managing role-based admin moderation workflows
+- Integrating third-party payment gateway services
+
+---
+
+## Scalability Considerations
+
+The system architecture was designed with scalability in mind.
+
+Future improvements may include:
+
+- Microservices architecture migration
+- Redis caching layer
+- WebSocket real-time notifications
+- Elasticsearch product search optimization
+- Docker containerization
+- Kubernetes deployment orchestration
+- CDN-based asset delivery
+- Mobile application development
+- Recommendation model improvement
+- Advanced analytics dashboards
+
+---
+
+## Screenshots
+
+System interface examples:
+
+- Authentication pages
+- Marketplace interface
+- Product management dashboard
+- Swap request workflow
+- Secure messaging system
+- Payment flow integration
+- Admin control dashboard
+- User analytics pages
+
+(Project screenshots can be added here)
+
+---
+
+## Deployment Environment
+
+Production deployment configuration:
+
+Frontend Hosting  
+→ Vercel
+
+Backend Hosting  
+→ Render
+
+Database Hosting  
+→ MongoDB Atlas
+
+Media Storage  
+→ Cloudinary CDN
+
+Email Infrastructure  
+→ SMTP Provider
+
+Payment Infrastructure  
+→ Paymob Gateway
+
+Domain Configuration  
+→ Custom Domain Setup with SSL
+
+---
+
+## Project Status
+
+Current system status:
+
+✅ Production Ready Architecture  
+✅ Secure Authentication System  
+✅ Full Product Exchange Workflow  
+✅ Payment Integration Completed  
+✅ Email Infrastructure Configured  
+✅ Admin Dashboard Completed  
+✅ Security Layers Implemented  
+✅ Deployment Completed  
+✅ Domain Configuration Active  
+✅ Monitoring and Testing Completed
+
+---
+
+## Author
+
+Developed and engineered by:
+
+**Your Name**
+
+Software Engineer | Data Analyst
+
+GitHub Profile: (Add your GitHub profile here)
+
+LinkedIn: (Add your LinkedIn here)
+
+---
+
+## License
+
+This project is intended for professional portfolio demonstration purposes.
