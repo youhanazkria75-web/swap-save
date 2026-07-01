@@ -1,72 +1,90 @@
 # Swap & Save
 
-### AI-Powered Product Exchange Platform
+An intelligent product exchange platform designed to help users trade products directly instead of traditional buying and selling.
 
-Production-grade intelligent marketplace designed to enable secure peer-to-peer product exchange through structured transaction workflows, trust scoring systems, integrated payment processing, analytics monitoring, and real-time operational management.
-
----
-
-## Live Platform
-
-🌐 Website  
-https://www.swapandsave.app  
-
-⚙ API Infrastructure  
-https://api.swapandsave.app  
+Swap & Save provides a secure marketplace where users can exchange items, communicate safely, complete verified swap transactions, and build trust through a reputation-based ecosystem.
 
 ---
 
 ## Overview
 
-Swap & Save is a full-scale production-ready exchange platform built to provide users with a secure alternative to traditional online buying and selling marketplaces.
+Swap & Save is a full-stack marketplace platform that allows users to:
 
-The platform enables users to exchange products through a controlled multi-stage workflow where users can create listings, request exchanges, communicate securely, complete transaction verification, pay service fees, manage exchange logistics, and finalize transactions within a monitored environment.
+- Exchange products instead of purchasing
+- Discover compatible swap opportunities
+- Communicate through protected in-platform messaging
+- Complete secure product exchange workflows
+- Pay transaction service fees through integrated payment gateway
+- Build trust scores through successful exchanges
+- Receive AI-powered product matching recommendations
+- Interact within a monitored and fraud-protected environment
 
-The system focuses heavily on trust, operational security, fraud prevention, structured transaction management, and scalable infrastructure design.
-
-Unlike conventional marketplace systems, Swap & Save introduces a workflow-driven exchange engine that controls the entire product exchange lifecycle while maintaining transaction integrity, analytics visibility, administrative oversight, and secure payment coordination.
-
----
-
-## Core Capabilities
-
-- Secure user authentication and authorization system  
-- Google OAuth integration  
-- Product listing and marketplace management  
-- AI-powered product recommendation engine  
-- Structured swap request workflow  
-- Real-time user messaging system  
-- Notifications and unread activity tracking  
-- Integrated Paymob payment processing  
-- Service fee payment verification workflow  
-- User trust scoring and reputation system  
-- Ratings and review management  
-- Product save and wishlist system  
-- Admin moderation dashboard  
-- Reports and dispute management system  
-- Suspicious activity monitoring system  
-- Email verification and password recovery system  
-- Cloud-based image management infrastructure  
+The platform focuses on creating a safer alternative to traditional second-hand marketplaces.
 
 ---
 
-## Business Workflow Engine
+## Core Features
 
-The platform operates using a structured exchange lifecycle:
+### User Features
 
-```text
-User Registration  
-→ Product Listing  
-→ Marketplace Discovery  
-→ Swap Request Submission  
-→ Request Acceptance  
-→ Secure Discussion Channel  
-→ Administrative Review  
-→ Payment Verification  
-→ Exchange Setup  
-→ Physical Exchange Coordination  
-→ Swap Completion  
-→ Rating & Reputation Update
-```
+- User registration and authentication
+- Email verification system
+- Password recovery via email
+- Product listing management
+- Product image upload system
+- Product browsing and filtering
+- Save favorite products
+- Real-time swap request workflow
+- Secure in-platform messaging
+- Swap lifecycle management
+- Ratings and reviews
+- Trust score system
+- Notification system
+- AI-powered product recommendations
+- Coin balance system
+- Secure payment processing
 
-The workflow ensures security, fairness, fraud prevention, and transaction traceability during every stage of the exchange process.
+---
+
+### Admin Features
+
+- Admin dashboard analytics
+- Product moderation tools
+- User account management
+- Fraud detection monitoring
+- Reports and disputes management
+- Support message management
+- Transaction monitoring
+- Suspicious activity detection
+- Exchange approval system
+- Platform analytics system
+
+---
+
+## System Architecture
+
+The platform follows a full-stack architecture:
+
+Frontend  
+→ Next.js + TypeScript
+
+Backend  
+→ Node.js + Express.js
+
+Database  
+→ MongoDB + Mongoose
+
+Authentication  
+→ JWT + bcrypt
+
+Payments  
+→ Paymob Integration
+
+Cloud Storage  
+→ Cloudinary
+
+Email Services  
+→ SMTP + Brevo
+
+Deployment  
+→ Vercel + Render
