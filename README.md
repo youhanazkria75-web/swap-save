@@ -332,15 +332,13 @@ Current system status:
 
 ## Author
 
-Developed and engineered by:
+Developed and by:
 
-**Your Name**
+**Youhana zkria**
 
-Software Engineer | Data Analyst
+Data Analyst | Backend & Systems Enthusiast
 
-GitHub Profile: (Add your GitHub profile here)
-
-LinkedIn: (Add your LinkedIn here)
+LinkedIn: www.linkedin.com/in/yohana-zkria-46aa1b34a
 
 ---
 
